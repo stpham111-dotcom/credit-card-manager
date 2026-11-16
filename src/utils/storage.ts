@@ -101,13 +101,27 @@ export function loadTransactions(): Transaction[] {
       let merged = parsed;
       if (missingReal.length > 0 && !userExplicitlyCleared) {
         merged = [...parsed, ...missingReal];
+      }
+
+      // Convert any Shopee or TikTok Shop categories to 'online_shopping' (Mua sắm trực tuyến)
+      let needsResave = missingReal.length > 0;
+      merged = merged.map((t: Transaction) => {
+        let updated = t;
+        if (t.categoryId === 'shopee' || t.categoryId === 'tiktok_shop') {
+          updated = { ...updated, categoryId: 'online_shopping' };
+          needsResave = true;
+        }
+        if (cards.length === 1 && updated.cardId !== targetCardId) {
+          updated = { ...updated, cardId: targetCardId };
+          needsResave = true;
+        }
+        return updated;
+      });
+
+      if (needsResave && !userExplicitlyCleared) {
         saveTransactions(merged);
       }
 
-      // Ensure all transactions have valid cardId mapping to user's card if user has only 1 card
-      if (cards.length === 1) {
-        return merged.map((t: Transaction) => ({ ...t, cardId: targetCardId }));
-      }
       return merged;
     }
     return [];

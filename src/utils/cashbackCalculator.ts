@@ -89,8 +89,8 @@ export function estimateTransactionCashback(
   const isMBJCB = (card.bankName.toLowerCase().includes('mb') && (card.cardName.toLowerCase().includes('jcb') || card.cardType === 'jcb')) || card.cardName.toLowerCase().includes('mb jcb');
 
   if (isMBJCB) {
-    if (categoryId === 'shopee' || categoryId === 'tiktok_shop') {
-      const catName = categoryId === 'shopee' ? 'Shopee' : 'TikTok Shop';
+    if (categoryId === 'online_shopping' || categoryId === 'shopee' || categoryId === 'tiktok_shop') {
+      const catName = 'Mua sắm trực tuyến (Shopee, TikTok Shop)';
       return {
         cashback: (amount * 10) / 100,
         rate: 10,
@@ -167,10 +167,13 @@ export function analyzeCardCycle(
     let otherSpent = 0;
 
     expenseTransactions.forEach(t => {
-      if (t.categoryId === 'shopee') {
-        shopeeSpent += t.amount;
-      } else if (t.categoryId === 'tiktok_shop') {
+      const isOnlineShopping = t.categoryId === 'online_shopping' || t.categoryId === 'shopee' || t.categoryId === 'tiktok_shop' || t.mcc === '5262' || t.note?.toLowerCase().includes('shopee') || t.note?.toLowerCase().includes('tiktok');
+      const isTikTok = t.categoryId === 'tiktok_shop' || (t.note?.toLowerCase().includes('tiktok') ?? false);
+      
+      if (isTikTok) {
         tiktokSpent += t.amount;
+      } else if (isOnlineShopping) {
+        shopeeSpent += t.amount;
       } else {
         otherSpent += t.amount;
       }
@@ -228,25 +231,14 @@ export function analyzeCardCycle(
 
     // Category summaries
     categories.push({
-      categoryId: 'shopee',
-      categoryName: 'Shopee (Hoàn 10% khi ≥ 2M & ĐK Lĩnh vực khác)',
-      totalSpent: shopeeSpent,
+      categoryId: 'online_shopping',
+      categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop - Hoàn 10% khi ≥ 2M & ĐK Lĩnh vực khác)',
+      totalSpent: shopeeSpent + tiktokSpent,
       rate: 10,
-      rawCashback: rawShopeeCashback,
-      actualCashback: actualShopeeCashback,
+      rawCashback: rawShopeeCashback + rawTikTokCashback,
+      actualCashback: finalMBJCBCashback,
       maxCashback: 500000,
-      isCapped: actualShopeeCashback >= 500000,
-    });
-
-    categories.push({
-      categoryId: 'tiktok_shop',
-      categoryName: 'TikTok Shop (Hoàn 10% khi ≥ 2M & ĐK Lĩnh vực khác)',
-      totalSpent: tiktokSpent,
-      rate: 10,
-      rawCashback: rawTikTokCashback,
-      actualCashback: actualTikTokCashback,
-      maxCashback: 500000,
-      isCapped: actualTikTokCashback >= 500000,
+      isCapped: capReached,
     });
 
     categories.push({

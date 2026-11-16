@@ -20,15 +20,8 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
       defaultPercentage: 0,
       categoryRules: [
         {
-          categoryId: 'shopee',
-          categoryName: 'Shopee (Mua hàng hóa)',
-          percentage: 10,
-          maxCashback: 500000,
-          minSpend: 2000000,
-        },
-        {
-          categoryId: 'tiktok_shop',
-          categoryName: 'TikTok Shop (Mua hàng hóa)',
+          categoryId: 'online_shopping',
+          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
           percentage: 10,
           maxCashback: 500000,
           minSpend: 2000000,
@@ -171,15 +164,8 @@ export const INITIAL_SAMPLE_CARDS: CreditCard[] = [
       defaultPercentage: 0,
       categoryRules: [
         {
-          categoryId: 'shopee',
-          categoryName: 'Shopee (Mua hàng hóa)',
-          percentage: 10,
-          maxCashback: 500000,
-          minSpend: 2000000,
-        },
-        {
-          categoryId: 'tiktok_shop',
-          categoryName: 'TikTok Shop (Mua hàng hóa)',
+          categoryId: 'online_shopping',
+          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
           percentage: 10,
           maxCashback: 500000,
           minSpend: 2000000,
