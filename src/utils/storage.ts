@@ -283,6 +283,7 @@ export function exportBackupJSON(): string {
     categories: loadCategories(),
     displayOptions: loadDisplayOptions(),
     paidStatus: loadPaidStatus(),
+    installments: loadInstallments(),
   };
   return JSON.stringify(data, null, 2);
 }
@@ -304,6 +305,9 @@ export function importBackupJSON(jsonStr: string): boolean {
     }
     if (data.paidStatus) {
       savePaidStatus(data.paidStatus);
+    }
+    if (data.installments && Array.isArray(data.installments)) {
+      saveInstallments(data.installments);
     }
     markAppInitialized();
     return true;
