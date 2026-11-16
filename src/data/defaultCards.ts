@@ -1,0 +1,163 @@
+import { CreditCard } from '../types';
+
+export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
+  {
+    bankName: 'VIB',
+    cardName: 'VIB Cash Back',
+    cardType: 'mastercard',
+    creditLimit: 50000000,
+    statementDay: 20,
+    paymentDueDaysAfter: 25,
+    themeColor: 'from-blue-700 via-indigo-800 to-slate-900',
+    cashbackPolicy: {
+      overallMaxCashback: 600000,
+      minCycleSpendToQualify: 5000000,
+      defaultPercentage: 0.5,
+      categoryRules: [
+        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 10, maxCashback: 300000 },
+        { categoryId: 'supermarket', categoryName: 'Siêu thị & Tạp hóa', percentage: 5, maxCashback: 200000 },
+        { categoryId: 'online_shopping', categoryName: 'Mua sắm trực tuyến', percentage: 3, maxCashback: 200000 },
+      ],
+    },
+  },
+  {
+    bankName: 'VIB',
+    cardName: 'VIB Super Card',
+    cardType: 'mastercard',
+    creditLimit: 80000000,
+    statementDay: 25,
+    paymentDueDaysAfter: 25,
+    themeColor: 'from-slate-800 via-zinc-800 to-neutral-950',
+    cashbackPolicy: {
+      overallMaxCashback: 1000000,
+      minCycleSpendToQualify: 0,
+      defaultPercentage: 0.5,
+      categoryRules: [
+        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 10, maxCashback: 1000000 },
+        { categoryId: 'travel', categoryName: 'Du lịch & Khách sạn', percentage: 10, maxCashback: 500000 },
+      ],
+    },
+  },
+  {
+    bankName: 'VPBank',
+    cardName: 'VPBank Step Up',
+    cardType: 'visa',
+    creditLimit: 40000000,
+    statementDay: 15,
+    paymentDueDaysAfter: 15,
+    themeColor: 'from-emerald-600 via-teal-700 to-slate-900',
+    cashbackPolicy: {
+      overallMaxCashback: 600000,
+      minCycleSpendToQualify: 3000000,
+      defaultPercentage: 0.3,
+      categoryRules: [
+        { categoryId: 'online_shopping', categoryName: 'Mua sắm trực tuyến', percentage: 15, maxCashback: 400000 },
+        { categoryId: 'transport', categoryName: 'Xăng dầu & Di chuyển', percentage: 5, maxCashback: 200000 },
+        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 2, maxCashback: 200000 },
+      ],
+    },
+  },
+  {
+    bankName: 'HSBC',
+    cardName: 'HSBC Live+',
+    cardType: 'visa',
+    creditLimit: 60000000,
+    statementDay: 18,
+    paymentDueDaysAfter: 20,
+    themeColor: 'from-rose-700 via-red-800 to-neutral-900',
+    cashbackPolicy: {
+      overallMaxCashback: 500000,
+      minCycleSpendToQualify: 6000000,
+      defaultPercentage: 0.5,
+      categoryRules: [
+        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 8, maxCashback: 300000 },
+        { categoryId: 'supermarket', categoryName: 'Siêu thị & Tạp hóa', percentage: 8, maxCashback: 300000 },
+      ],
+    },
+  },
+  {
+    bankName: 'Techcombank',
+    cardName: 'Techcombank Spark',
+    cardType: 'visa',
+    creditLimit: 50000000,
+    statementDay: 10,
+    paymentDueDaysAfter: 15,
+    themeColor: 'from-red-600 via-rose-700 to-stone-900',
+    cashbackPolicy: {
+      overallMaxCashback: 500000,
+      minCycleSpendToQualify: 0,
+      defaultPercentage: 1.0,
+      categoryRules: [
+        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 5, maxCashback: 300000 },
+        { categoryId: 'education_health', categoryName: 'Y tế & Giáo dục', percentage: 5, maxCashback: 300000 },
+      ],
+    },
+  },
+  {
+    bankName: 'Sacombank',
+    cardName: 'Sacombank Visa Platinum Cashback',
+    cardType: 'visa',
+    creditLimit: 70000000,
+    statementDay: 22,
+    paymentDueDaysAfter: 25,
+    themeColor: 'from-blue-600 via-sky-700 to-indigo-900',
+    cashbackPolicy: {
+      overallMaxCashback: 600000,
+      minCycleSpendToQualify: 0,
+      defaultPercentage: 0.5,
+      categoryRules: [
+        { categoryId: 'online_shopping', categoryName: 'Mua sắm trực tuyến', percentage: 5, maxCashback: 600000 },
+      ],
+    },
+  },
+];
+
+export const INITIAL_SAMPLE_CARDS: CreditCard[] = [
+  {
+    id: 'card-sample-1',
+    bankName: 'VIB',
+    cardName: 'VIB Cash Back',
+    cardNumberLast4: '8892',
+    cardType: 'mastercard',
+    creditLimit: 60000000,
+    statementDay: 20,
+    paymentDueDaysAfter: 25,
+    themeColor: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #0f172a 100%)',
+    personalTargetSpend: 15000000,
+    isActive: true,
+    order: 1,
+    cashbackPolicy: {
+      overallMaxCashback: 600000,
+      minCycleSpendToQualify: 5000000,
+      defaultPercentage: 0.5,
+      categoryRules: [
+        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 10, maxCashback: 300000 },
+        { categoryId: 'supermarket', categoryName: 'Siêu thị & Tạp hóa', percentage: 5, maxCashback: 200000 },
+        { categoryId: 'online_shopping', categoryName: 'Mua sắm trực tuyến', percentage: 3, maxCashback: 200000 },
+      ],
+    },
+  },
+  {
+    id: 'card-sample-2',
+    bankName: 'VPBank',
+    cardName: 'VPBank Step Up',
+    cardNumberLast4: '4156',
+    cardType: 'visa',
+    creditLimit: 40000000,
+    statementDay: 15,
+    paymentDueDaysAfter: 15,
+    themeColor: 'linear-gradient(135deg, #059669 0%, #0f766e 50%, #111827 100%)',
+    personalTargetSpend: 8000000,
+    isActive: true,
+    order: 2,
+    cashbackPolicy: {
+      overallMaxCashback: 600000,
+      minCycleSpendToQualify: 3000000,
+      defaultPercentage: 0.3,
+      categoryRules: [
+        { categoryId: 'online_shopping', categoryName: 'Mua sắm trực tuyến', percentage: 15, maxCashback: 400000 },
+        { categoryId: 'transport', categoryName: 'Xăng dầu & Di chuyển', percentage: 5, maxCashback: 200000 },
+      ],
+    },
+  },
+];
