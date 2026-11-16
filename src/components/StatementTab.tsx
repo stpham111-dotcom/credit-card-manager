@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Calendar, CheckCircle2, AlertTriangle, Clock, CreditCard as CardIcon } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { CreditCard, Transaction } from '../types';
 import { analyzeCardCycle } from '../utils/cashbackCalculator';
 import { formatVND, formatDateVN } from '../utils/formatters';
+import { loadPaidStatus, savePaidStatus } from '../utils/storage';
 
 interface StatementTabProps {
   cards: CreditCard[];
@@ -15,20 +16,12 @@ export const StatementTab: React.FC<StatementTabProps> = ({
   transactions,
   onAddTransaction,
 }) => {
-  // Store local paid status map { [cardId_cycleKey]: boolean }
-  const [paidStatus, setPaidStatus] = useState<Record<string, boolean>>(() => {
-    try {
-      const saved = localStorage.getItem('hoantien_paid_status_v1');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [paidStatus, setPaidStatus] = useState<Record<string, boolean>>(() => loadPaidStatus());
 
   const togglePaid = (key: string) => {
     const next = { ...paidStatus, [key]: !paidStatus[key] };
     setPaidStatus(next);
-    localStorage.setItem('hoantien_paid_status_v1', JSON.stringify(next));
+    savePaidStatus(next);
   };
 
   const activeCards = cards.filter(c => c.isActive);

@@ -12,9 +12,12 @@ import {
   loadTransactions, 
   saveTransactions, 
   loadCategories, 
+  saveCategories,
   loadDisplayOptions, 
   saveDisplayOptions, 
   seedSampleData,
+  isAppInitialized,
+  clearAllUserData
 } from './utils/storage';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -33,6 +36,7 @@ export function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<SpendingCategory[]>([]);
   const [displayOptions, setDisplayOptions] = useState<DisplayOptions>(loadDisplayOptions());
+  const [saveToast, setSaveToast] = useState<string | null>(null);
 
   // Modals
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -41,22 +45,24 @@ export function App() {
   const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const showSaveSuccess = (message: string) => {
+    setSaveToast(message);
+    setTimeout(() => setSaveToast(null), 2500);
+  };
+
   // Initialize data on mount
   useEffect(() => {
-    const loadedCards = loadCards();
-    const loadedTx = loadTransactions();
-    const loadedCats = loadCategories();
-
-    if (loadedCards.length === 0) {
-      // Auto-seed with realistic sample cards and transactions on first launch
+    if (!isAppInitialized()) {
+      // First time user ever opens the app: seed sample data
       const sample = seedSampleData();
       setCards(sample.cards);
       setTransactions(sample.transactions);
-      setCategories(loadedCats);
+      setCategories(loadCategories());
     } else {
-      setCards(loadedCards);
-      setTransactions(loadedTx);
-      setCategories(loadedCats);
+      // User has used the app before: load EXACT saved state (even if 0 cards)
+      setCards(loadCards());
+      setTransactions(loadTransactions());
+      setCategories(loadCategories());
     }
   }, []);
 
@@ -74,12 +80,14 @@ export function App() {
     const updated = [newTx, ...transactions];
     setTransactions(updated);
     saveTransactions(updated);
+    showSaveSuccess('Đã lưu giao dịch vào bộ nhớ trình duyệt!');
   };
 
   const handleDeleteTransaction = (id: string) => {
     const updated = transactions.filter(t => t.id !== id);
     setTransactions(updated);
     saveTransactions(updated);
+    showSaveSuccess('Đã xóa giao dịch khỏi bộ nhớ!');
   };
 
   const handleSaveCard = (card: CreditCard) => {
@@ -87,21 +95,25 @@ export function App() {
     let updated: CreditCard[];
     if (exists) {
       updated = cards.map(c => c.id === card.id ? card : c);
+      showSaveSuccess(`Đã cập nhật thông tin thẻ ${card.cardName}!`);
     } else {
       updated = [...cards, card];
+      showSaveSuccess(`Đã thêm mới thẻ ${card.cardName} vào bộ nhớ!`);
     }
     setCards(updated);
     saveCards(updated);
   };
 
   const handleDeleteCard = (cardId: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa thẻ này và các giao dịch liên quan?')) {
+    const cardToDelete = cards.find(c => c.id === cardId);
+    if (window.confirm(`Bạn có chắc chắn muốn xóa thẻ "${cardToDelete?.bankName || ''} - ${cardToDelete?.cardName || ''}"? Dữ liệu sẽ được xóa vĩnh viễn khỏi bộ nhớ.`)) {
       const updatedCards = cards.filter(c => c.id !== cardId);
       const updatedTx = transactions.filter(t => t.cardId !== cardId);
       setCards(updatedCards);
       setTransactions(updatedTx);
       saveCards(updatedCards);
       saveTransactions(updatedTx);
+      showSaveSuccess('Đã xóa thẻ khỏi bộ nhớ thành công!');
     }
   };
 
@@ -115,6 +127,16 @@ export function App() {
     const sample = seedSampleData();
     setCards(sample.cards);
     setTransactions(sample.transactions);
+    showSaveSuccess('Đã nạp lại dữ liệu mẫu vào bộ nhớ!');
+  };
+
+  const handleClearAllData = () => {
+    if (window.confirm('Cảnh báo: Bạn có muốn xóa sạch toàn bộ thẻ và lịch sử giao dịch để bắt đầu lại từ đầu?')) {
+      clearAllUserData();
+      setCards([]);
+      setTransactions([]);
+      showSaveSuccess('Đã xóa sạch dữ liệu. Bạn có thể thêm thẻ mới!');
+    }
   };
 
   const handleExportCSVReport = () => {
@@ -160,7 +182,15 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7f6] flex flex-col lg:flex-row antialiased text-slate-800">
+    <div className="min-h-screen bg-[#f4f7f6] flex flex-col lg:flex-row antialiased text-slate-800 relative">
+      {/* Toast Save Notification */}
+      {saveToast && (
+        <div className="fixed top-4 right-4 z-50 bg-[#056c4c] text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 animate-in fade-in slide-in-from-top-3 duration-200">
+          <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+          <span>{saveToast}</span>
+        </div>
+      )}
+
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}
@@ -254,6 +284,7 @@ export function App() {
             onDataImported={() => {
               setCards(loadCards());
               setTransactions(loadTransactions());
+              showSaveSuccess('Đã khôi phục dữ liệu từ file!');
             }}
           />
         )}
