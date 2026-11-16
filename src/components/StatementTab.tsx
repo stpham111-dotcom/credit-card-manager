@@ -29,7 +29,7 @@ interface StatementTabProps {
 
 interface CycleDetails {
   key: string;
-  cycleId: 'prev' | 'closed' | 'current';
+  cycleId: 'first' | 'prev' | 'closed' | 'current';
   label: string;
   startDate: string;
   endDate: string;
@@ -50,8 +50,15 @@ export const StatementTab: React.FC<StatementTabProps> = ({
   transactions,
   onAddTransaction,
 }) => {
-  const [paidStatus, setPaidStatus] = useState<Record<string, boolean>>(() => loadPaidStatus());
-  const [selectedCycleFilter, setSelectedCycleFilter] = useState<'all' | 'prev' | 'closed' | 'current' | 'instalment'>('all');
+  const [paidStatus, setPaidStatus] = useState<Record<string, boolean>>(() => {
+    const loaded = loadPaidStatus();
+    // Default the first cycle (09/08 - 08/09) to paid as it was settled on 21/09
+    return {
+      'card-sample-mb-jcb_2026-08-09_2026-09-08': true,
+      ...loaded,
+    };
+  });
+  const [selectedCycleFilter, setSelectedCycleFilter] = useState<'all' | 'first' | 'prev' | 'closed' | 'current' | 'instalment'>('all');
   const [expandedCardCycle, setExpandedCardCycle] = useState<string | null>('card-sample-mb-jcb_2026-10-09_2026-11-08');
   const [showScheduleDetails, setShowScheduleDetails] = useState<boolean>(true);
 
@@ -80,6 +87,19 @@ export const StatementTab: React.FC<StatementTabProps> = ({
       const dd = String(d).padStart(2, '0');
       return `${y}-${mm}-${dd}`;
     };
+
+    // Cycle 0: Kỳ mở thẻ đầu tiên (Tháng 8 -> Tháng 9)
+    // 09/08/2026 -> 08/09/2026, hạn thanh toán 23/09/2026 (Đã thanh toán)
+    const firstStart = toIso(refYear, 8, stmtDay + 1);
+    const firstEnd = toIso(refYear, 9, stmtDay);
+    const firstDue = toIso(refYear, 9, dueDay);
+    const firstDueMs = new Date(refYear, 8, dueDay).getTime();
+    const firstDaysUntilDue = Math.ceil((firstDueMs - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    const firstTxs = transactions.filter(t => t.cardId === card.id && t.date >= firstStart && t.date <= firstEnd);
+    const firstExpense = firstTxs.filter(t => t.type !== 'income').reduce((sum, t) => sum + t.amount, 0);
+    const firstIncome = firstTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const firstNetDue = Math.max(0, firstExpense - firstIncome);
 
     // Cycle 1: Kỳ trước (Tháng 9 -> Tháng 10)
     // 09/09/2026 -> 08/10/2026, hạn thanh toán 23/10/2026
@@ -134,6 +154,23 @@ export const StatementTab: React.FC<StatementTabProps> = ({
     const currNetDue = Math.max(0, currExpense - currIncome);
 
     return [
+      {
+        key: `${card.id}_${firstStart}_${firstEnd}`,
+        cycleId: 'first',
+        label: 'Kỳ đầu (09/08 – 08/09)',
+        startDate: firstStart,
+        endDate: firstEnd,
+        dueDate: firstDue,
+        daysUntilDue: firstDaysUntilDue,
+        isOverdue: false,
+        totalSpent: firstExpense,
+        totalIncome: firstIncome,
+        netDue: firstNetDue,
+        txs: firstTxs,
+        instalmentPrincipal: 0,
+        instalmentFee: 0,
+        instalmentOffset: 0,
+      },
       {
         key: `${card.id}_${prevStart}_${prevEnd}`,
         cycleId: 'prev',
@@ -246,6 +283,17 @@ export const StatementTab: React.FC<StatementTabProps> = ({
           >
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             <span>Kỳ trước (Quá hạn)</span>
+          </button>
+          <button
+            onClick={() => setSelectedCycleFilter('first')}
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+              selectedCycleFilter === 'first'
+                ? 'bg-slate-200 text-slate-800 font-bold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Kỳ đầu (09/08 – 08/09)</span>
           </button>
         </div>
       </div>
@@ -554,6 +602,8 @@ export const StatementTab: React.FC<StatementTabProps> = ({
                                     ? 'bg-rose-100 text-rose-800'
                                     : cycle.cycleId === 'closed'
                                     ? 'bg-emerald-100 text-emerald-800'
+                                    : cycle.cycleId === 'first'
+                                    ? 'bg-slate-100 text-slate-800'
                                     : 'bg-blue-100 text-blue-800'
                                 }`}>
                                   {cycle.label}

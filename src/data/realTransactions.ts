@@ -933,5 +933,99 @@ export const REAL_MB_TRANSACTIONS: Transaction[] = [
     cashbackEarned: 30913,
     cashbackRate: 10,
   },
+
+  // 08/09/2026 - Ảnh mới 2
+  {
+    id: 'mb-real-70',
+    cardId: 'card-sample-mb-jcb',
+    amount: 299376,
+    date: '2026-09-08',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 29938,
+    cashbackRate: 10,
+  },
+
+  // 07/09/2026 - Ảnh mới 1
+  {
+    id: 'mb-real-71',
+    cardId: 'card-sample-mb-jcb',
+    amount: 209000,
+    date: '2026-09-07',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 20900,
+    cashbackRate: 10,
+  },
+  {
+    id: 'mb-real-72',
+    cardId: 'card-sample-mb-jcb',
+    amount: 153750,
+    date: '2026-09-07',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 15375,
+    cashbackRate: 10,
+  },
+
+  // 04/09/2026 - Ảnh mới 1
+  {
+    id: 'mb-real-73',
+    cardId: 'card-sample-mb-jcb',
+    amount: 64410,
+    date: '2026-09-04',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 6441,
+    cashbackRate: 10,
+  },
+
+  // 01/09/2026 - Ảnh mới 1
+  {
+    id: 'mb-real-74',
+    cardId: 'card-sample-mb-jcb',
+    amount: 184509,
+    date: '2026-09-01',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 18451,
+    cashbackRate: 10,
+  },
+
+  // 31/08/2026 - Ảnh mới 1
+  {
+    id: 'mb-real-75',
+    cardId: 'card-sample-mb-jcb',
+    amount: 217620,
+    date: '2026-08-31',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 21762,
+    cashbackRate: 10,
+  },
+  {
+    id: 'mb-real-76',
+    cardId: 'card-sample-mb-jcb',
+    amount: 45220,
+    date: '2026-08-31',
+    categoryId: 'online_shopping',
+    note: 'CTY TNHH SHOPEE',
+    mcc: '5262',
+    type: 'expense',
+    cashbackEarned: 4522,
+    cashbackRate: 10,
+  },
 ];
 

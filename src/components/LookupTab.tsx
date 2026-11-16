@@ -49,7 +49,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
   const [selectedCardId, setSelectedCardId] = useState('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [sortBy, setSortBy] = useState<SortField>('date-desc');
-  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'cycle-curr' | 'cycle-prev' | 'single' | 'range'>('all');
+  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'cycle-curr' | 'cycle-prev' | 'cycle-first' | 'single' | 'range'>('all');
   const [singleDate, setSingleDate] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -85,6 +85,8 @@ export const LookupTab: React.FC<LookupTabProps> = ({
           matchDate = t.date >= '2026-10-09' && t.date <= '2026-11-08';
         } else if (dateFilterMode === 'cycle-prev') {
           matchDate = t.date >= '2026-09-09' && t.date <= '2026-10-08';
+        } else if (dateFilterMode === 'cycle-first') {
+          matchDate = t.date >= '2026-08-09' && t.date <= '2026-09-08';
         } else if (dateFilterMode === 'single' && singleDate) {
           matchDate = t.date === singleDate;
         } else if (dateFilterMode === 'range') {
@@ -306,6 +308,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
                 <option value="range">Chọn khoảng ngày (Từ ngày – Đến ngày)</option>
                 <option value="cycle-curr">Kỳ sao kê này (09/10 – 08/11/2026)</option>
                 <option value="cycle-prev">Kỳ sao kê trước (09/09 – 08/10/2026)</option>
+                <option value="cycle-first">Kỳ mở thẻ đầu tiên (09/08 – 08/09/2026)</option>
               </select>
 
               {/* Input for single date */}
