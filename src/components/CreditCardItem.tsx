@@ -80,6 +80,14 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
               Hạn mức: <strong className="text-slate-700">{formatVND(card.creditLimit)}</strong>
               {card.cardNumberLast4 && ` • Đuôi thẻ: ${card.cardNumberLast4}`}
             </p>
+            {card.paymentMethod === 'auto_debit' && (
+              <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[#056c4c] font-medium bg-[#edf8f2] px-2 py-0.5 rounded-md w-fit">
+                <span>🔄 Trích nợ tự động: {card.paymentRate === 'minimum' ? 'Tối thiểu' : 'Toàn bộ nợ (100%)'}</span>
+                {card.autoDebitAccount && (
+                  <span className="text-slate-500 font-mono text-[10px]">({card.autoDebitAccount})</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

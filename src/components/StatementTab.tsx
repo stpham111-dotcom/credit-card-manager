@@ -97,41 +97,63 @@ export const StatementTab: React.FC<StatementTabProps> = ({
                   {/* Dates & Amounts */}
                   <div className="grid grid-cols-2 gap-3 py-4">
                     <div className="p-3 rounded-xl bg-slate-50">
-                      <span className="text-xs text-slate-500 block mb-1">Kỳ sao kê hiện tại</span>
+                      <span className="text-xs text-slate-500 block mb-1">Ngày lên sao kê</span>
                       <span className="text-xs font-semibold text-slate-800 block">
-                        {formatDateVN(analysis.cycleStartDate)} - {formatDateVN(analysis.cycleEndDate)}
+                        Mùng {card.statementDay} hàng tháng
                       </span>
                       <span className="text-[11px] text-slate-400 mt-1 block">
-                        Chốt ngày {card.statementDay}
+                        Kỳ: {formatDateVN(analysis.cycleStartDate)} - {formatDateVN(analysis.cycleEndDate)}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-xl bg-slate-50">
-                      <span className="text-xs text-slate-500 block mb-1">Hạn chót thanh toán</span>
+                      <span className="text-xs text-slate-500 block mb-1">Kỳ hạn thanh toán</span>
                       <span className="text-xs font-semibold text-slate-800 block">
-                        {formatDateVN(analysis.dueDate)}
+                        Ngày {card.paymentDueDayFixed || 23} hàng tháng
                       </span>
                       <span className={`text-[11px] font-medium mt-1 block ${
                         analysis.daysUntilDue <= 3 ? 'text-rose-600' : 'text-amber-600'
                       }`}>
-                        {analysis.daysUntilDue >= 0 ? `Còn ${analysis.daysUntilDue} ngày` : 'Đã quá hạn!'}
+                        {analysis.daysUntilDue >= 0 ? `Còn ${analysis.daysUntilDue} ngày (${formatDateVN(analysis.dueDate)})` : 'Đã quá hạn!'}
                       </span>
                     </div>
                   </div>
 
+                  {/* Chi tiết hình thức thanh toán & Trích nợ tự động */}
+                  {card.paymentMethod === 'auto_debit' && (
+                    <div className="p-3 rounded-xl bg-[#edf8f2] border border-[#c3e9d2] mb-3 text-xs space-y-1">
+                      <div className="flex justify-between items-center text-slate-700">
+                        <span className="text-slate-500">Hình thức thanh toán:</span>
+                        <strong className="text-[#056c4c]">Trích nợ tự động</strong>
+                      </div>
+                      {card.autoDebitAccount && (
+                        <div className="flex justify-between items-center text-slate-700">
+                          <span className="text-slate-500">Tài khoản trích nợ:</span>
+                          <span className="font-mono font-semibold text-slate-800">{card.autoDebitAccount}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center text-slate-700">
+                        <span className="text-slate-500">Tỷ lệ thanh toán:</span>
+                        <strong className="text-slate-900">{card.paymentRate === 'minimum' ? 'Tối thiểu 5%' : 'Toàn bộ nợ (100%)'}</strong>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Balance */}
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 mb-4 flex items-center justify-between">
                     <div>
-                      <span className="text-xs text-slate-500 block">Tổng dư nợ kỳ này:</span>
+                      <span className="text-xs text-slate-500 block">
+                        {card.paymentRate === 'minimum' ? 'Thanh toán tối thiểu (~5%):' : 'Số tiền trích nợ (Toàn bộ nợ):'}
+                      </span>
                       <span className="text-lg font-bold text-slate-900">
-                        {formatVND(analysis.totalSpent)}
+                        {formatVND(card.paymentRate === 'minimum' ? analysis.totalSpent * 0.05 : analysis.totalSpent)}
                       </span>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-xs text-slate-500 block">Thanh toán tối thiểu (~5%):</span>
+                      <span className="text-xs text-slate-500 block">Tổng dư nợ phát sinh:</span>
                       <span className="text-sm font-semibold text-slate-700">
-                        {formatVND(analysis.totalSpent * 0.05)}
+                        {formatVND(analysis.totalSpent)}
                       </span>
                     </div>
                   </div>

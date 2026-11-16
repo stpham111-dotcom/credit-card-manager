@@ -32,8 +32,12 @@ export const CardModal: React.FC<CardModalProps> = ({
   const [cardType, setCardType] = useState<CardType>('mastercard');
   const [last4, setLast4] = useState('');
   const [limitStr, setLimitStr] = useState('50.000.000');
-  const [statementDay, setStatementDay] = useState(20);
-  const [dueDays, setDueDays] = useState(25);
+  const [statementDay, setStatementDay] = useState(8);
+  const [dueDays, setDueDays] = useState(15);
+  const [paymentDueDayFixed, setPaymentDueDayFixed] = useState<number | undefined>(23);
+  const [paymentMethod, setPaymentMethod] = useState<'auto_debit' | 'manual'>('auto_debit');
+  const [autoDebitAccount, setAutoDebitAccount] = useState('004131414 - PHAM THANH SON');
+  const [paymentRate, setPaymentRate] = useState<'full' | 'minimum'>('full');
   const [personalTargetStr, setPersonalTargetStr] = useState('');
   const [themeColor, setThemeColor] = useState(COLOR_PRESETS[0].value);
 
@@ -55,6 +59,10 @@ export const CardModal: React.FC<CardModalProps> = ({
       setLimitStr(editingCard.creditLimit.toLocaleString('vi-VN'));
       setStatementDay(editingCard.statementDay);
       setDueDays(editingCard.paymentDueDaysAfter || 15);
+      setPaymentDueDayFixed(editingCard.paymentDueDayFixed);
+      setPaymentMethod(editingCard.paymentMethod || 'manual');
+      setAutoDebitAccount(editingCard.autoDebitAccount || '');
+      setPaymentRate(editingCard.paymentRate || 'full');
       setPersonalTargetStr(editingCard.personalTargetSpend ? editingCard.personalTargetSpend.toLocaleString('vi-VN') : '');
       setThemeColor(editingCard.themeColor || COLOR_PRESETS[0].value);
 
@@ -65,21 +73,30 @@ export const CardModal: React.FC<CardModalProps> = ({
       setCategoryRules(p.categoryRules || []);
     } else {
       // Reset to defaults
-      setBankName('VIB');
-      setCardName('VIB Cash Back');
-      setCardType('mastercard');
+      setBankName('MB Bank');
+      setCardName('MB JCB Platinum');
+      setCardType('jcb');
       setLast4('');
       setLimitStr('50.000.000');
-      setStatementDay(20);
-      setDueDays(25);
+      setStatementDay(8);
+      setDueDays(15);
+      setPaymentDueDayFixed(23);
+      setPaymentMethod('auto_debit');
+      setAutoDebitAccount('004131414 - PHAM THANH SON');
+      setPaymentRate('full');
       setPersonalTargetStr('');
       setThemeColor(COLOR_PRESETS[0].value);
-      setOverallCapStr('600.000');
-      setMinSpendStr('5.000.000');
-      setDefaultRate(0.5);
+      setOverallCapStr('500.000');
+      setMinSpendStr('4.000.000');
+      setDefaultRate(0.3);
       setCategoryRules([
-        { categoryId: 'dining', categoryName: 'Ẩm thực & Nhà hàng', percentage: 10, maxCashback: 300000 },
-        { categoryId: 'supermarket', categoryName: 'Siêu thị & Tạp hóa', percentage: 5, maxCashback: 200000 },
+        {
+          categoryId: 'online_shopping',
+          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
+          percentage: 10,
+          maxCashback: 500000,
+          minSpend: 2000000,
+        },
       ]);
     }
   }, [editingCard, isOpen]);
@@ -93,6 +110,10 @@ export const CardModal: React.FC<CardModalProps> = ({
     if (preset.creditLimit) setLimitStr(preset.creditLimit.toLocaleString('vi-VN'));
     if (preset.statementDay) setStatementDay(preset.statementDay);
     if (preset.paymentDueDaysAfter) setDueDays(preset.paymentDueDaysAfter);
+    if (preset.paymentDueDayFixed !== undefined) setPaymentDueDayFixed(preset.paymentDueDayFixed);
+    if (preset.paymentMethod) setPaymentMethod(preset.paymentMethod);
+    if (preset.autoDebitAccount) setAutoDebitAccount(preset.autoDebitAccount);
+    if (preset.paymentRate) setPaymentRate(preset.paymentRate);
     if (preset.personalTargetSpend) setPersonalTargetStr(preset.personalTargetSpend.toLocaleString('vi-VN'));
     if (preset.themeColor) setThemeColor(preset.themeColor);
     if (preset.cashbackPolicy) {
@@ -139,6 +160,10 @@ export const CardModal: React.FC<CardModalProps> = ({
       creditLimit: limit,
       statementDay,
       paymentDueDaysAfter: dueDays,
+      paymentDueDayFixed,
+      paymentMethod,
+      autoDebitAccount: autoDebitAccount.trim() || undefined,
+      paymentRate,
       personalTargetSpend: personalTarget,
       themeColor,
       isActive: true,
@@ -347,6 +372,78 @@ export const CardModal: React.FC<CardModalProps> = ({
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#056c4c]/30 focus:border-[#056c4c]"
                 />
               </div>
+            </div>
+
+            {/* Thông tin sao kê & Trích nợ tự động */}
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                Thông tin sao kê & Thanh toán tự động
+              </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Kỳ hạn thanh toán
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={paymentDueDayFixed || ''}
+                      onChange={(e) => setPaymentDueDayFixed(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                      placeholder="VD: 23"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#056c4c]/30"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                      ngày hàng tháng
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Hình thức thanh toán
+                  </label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'auto_debit' | 'manual')}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#056c4c]/30"
+                  >
+                    <option value="auto_debit">Trích nợ tự động</option>
+                    <option value="manual">Tự thanh toán thủ công</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Tỷ lệ thanh toán
+                  </label>
+                  <select
+                    value={paymentRate}
+                    onChange={(e) => setPaymentRate(e.target.value as 'full' | 'minimum')}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#056c4c]/30"
+                  >
+                    <option value="full">Toàn bộ nợ (100%)</option>
+                    <option value="minimum">Thanh toán tối thiểu (5%)</option>
+                  </select>
+                </div>
+              </div>
+
+              {paymentMethod === 'auto_debit' && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Tài khoản trích nợ tự động
+                  </label>
+                  <input
+                    type="text"
+                    value={autoDebitAccount}
+                    onChange={(e) => setAutoDebitAccount(e.target.value)}
+                    placeholder="VD: 004131414 - PHAM THANH SON"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#056c4c]/30"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Color preview */}

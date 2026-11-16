@@ -61,7 +61,28 @@ export function App() {
       setCategories(loadCategories());
     } else {
       // User has used the app before: load EXACT saved state (even if 0 cards)
-      setCards(loadCards());
+      let loaded = loadCards();
+      // Automatically enrich MB JCB Platinum with exact statement info from user's app
+      let hasModified = false;
+      loaded = loaded.map(c => {
+        if (c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb')) {
+          hasModified = true;
+          return {
+            ...c,
+            statementDay: 8,
+            paymentDueDayFixed: 23,
+            paymentDueDaysAfter: 15,
+            paymentMethod: 'auto_debit',
+            autoDebitAccount: '004131414 - PHAM THANH SON',
+            paymentRate: 'full',
+          };
+        }
+        return c;
+      });
+      if (hasModified) {
+        saveCards(loaded);
+      }
+      setCards(loaded);
       setTransactions(loadTransactions());
       setCategories(loadCategories());
     }
@@ -141,8 +162,12 @@ export function App() {
         cardNumberLast4: '6868',
         cardType: 'jcb',
         creditLimit: mbPreset.creditLimit || 50000000,
-        statementDay: mbPreset.statementDay || 18,
-        paymentDueDaysAfter: mbPreset.paymentDueDaysAfter || 15,
+        statementDay: mbPreset.statementDay || 8,
+        paymentDueDaysAfter: 15,
+        paymentDueDayFixed: 23,
+        paymentMethod: 'auto_debit',
+        autoDebitAccount: '004131414 - PHAM THANH SON',
+        paymentRate: 'full',
         themeColor: mbPreset.themeColor || 'linear-gradient(135deg, #0b192c 0%, #1e3e62 50%, #000000 100%)',
         personalTargetSpend: 10000000,
         isActive: true,
@@ -152,7 +177,7 @@ export function App() {
       const updated = [newCard, ...cards];
       setCards(updated);
       saveCards(updated);
-      showSaveSuccess('Đã thêm thẻ MB Bank JCB Platinum thành công!');
+      showSaveSuccess('Đã thêm thẻ MB Bank JCB Platinum với thông tin trích nợ tự động!');
     }
   };
 

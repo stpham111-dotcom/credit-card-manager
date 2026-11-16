@@ -24,7 +24,10 @@ export interface CreditCard {
   creditLimit: number; // e.g. 50,000,000 VND
   statementDay: number; // Day of month card statement is issued (e.g. 20)
   paymentDueDaysAfter: number; // Days after statement day payment is due (e.g. 15-25 days) or fixed day of month
-  paymentDueDayFixed?: number; // If bank specifies exact day, e.g. day 5 of next month
+  paymentDueDayFixed?: number; // If bank specifies exact day, e.g. day 23 of month
+  paymentMethod?: 'auto_debit' | 'manual'; // Hình thức thanh toán: Trích nợ tự động hoặc Thủ công
+  autoDebitAccount?: string; // Tài khoản trích nợ (VD: '004131414 - PHAM THANH SON')
+  paymentRate?: 'full' | 'minimum'; // Tỷ lệ thanh toán: Toàn bộ nợ (100%) hoặc Tối thiểu (5%)
   themeColor: string; // Hex or gradient preset name
   cashbackPolicy: CashbackPolicy;
   personalTargetSpend?: number; // Optional personal monthly spending budget
