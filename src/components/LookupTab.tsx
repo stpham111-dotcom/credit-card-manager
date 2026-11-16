@@ -13,7 +13,9 @@ import {
   AlertCircle,
   Tag,
   Sparkles,
-  RotateCcw
+  RotateCcw,
+  Calendar,
+  X
 } from 'lucide-react';
 import { CreditCard, SpendingCategory, Transaction } from '../types';
 import { formatVND, formatDateVN } from '../utils/formatters';
@@ -47,9 +49,22 @@ export const LookupTab: React.FC<LookupTabProps> = ({
   const [selectedCardId, setSelectedCardId] = useState('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [sortBy, setSortBy] = useState<SortField>('date-desc');
+  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'cycle-curr' | 'cycle-prev' | 'single' | 'range'>('all');
+  const [singleDate, setSingleDate] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   const cardMap = useMemo(() => new Map(cards.map(c => [c.id, c])), [cards]);
   const catMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+
+  // Extract unique sorted dates for fast selection
+  const uniqueDates = useMemo(() => {
+    const set = new Set<string>();
+    transactions.forEach(t => {
+      if (t.date) set.add(t.date);
+    });
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [transactions]);
 
   // Filter and sort transactions
   const filteredTransactions = useMemo(() => {
@@ -64,7 +79,20 @@ export const LookupTab: React.FC<LookupTabProps> = ({
         const matchCard = selectedCardId === 'all' || t.cardId === selectedCardId;
         const matchCategory = selectedCategoryId === 'all' || t.categoryId === selectedCategoryId;
 
-        return matchSearch && matchCard && matchCategory;
+        // Date filter
+        let matchDate = true;
+        if (dateFilterMode === 'cycle-curr') {
+          matchDate = t.date >= '2026-10-09' && t.date <= '2026-11-08';
+        } else if (dateFilterMode === 'cycle-prev') {
+          matchDate = t.date >= '2026-09-09' && t.date <= '2026-10-08';
+        } else if (dateFilterMode === 'single' && singleDate) {
+          matchDate = t.date === singleDate;
+        } else if (dateFilterMode === 'range') {
+          if (startDate && t.date < startDate) matchDate = false;
+          if (endDate && t.date > endDate) matchDate = false;
+        }
+
+        return matchSearch && matchCard && matchCategory && matchDate;
       })
       .sort((a, b) => {
         switch (sortBy) {
@@ -81,7 +109,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
             return b.date.localeCompare(a.date);
         }
       });
-  }, [transactions, searchTerm, selectedCardId, selectedCategoryId, sortBy]);
+  }, [transactions, searchTerm, selectedCardId, selectedCategoryId, sortBy, dateFilterMode, singleDate, startDate, endDate]);
 
   // Metrics on filtered list
   const totalFilteredAmount = useMemo(
@@ -248,8 +276,139 @@ export const LookupTab: React.FC<LookupTabProps> = ({
           </div>
         </div>
 
+        {/* Date Filter Bar */}
+        <div className="pt-3 border-t border-slate-100 space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 pr-1">
+                <Calendar className="w-4 h-4 text-[#056c4c]" />
+                <span>Xem theo ngày:</span>
+              </div>
+
+              {/* Mode Selector */}
+              <select
+                value={dateFilterMode}
+                onChange={(e) => {
+                  const mode = e.target.value as any;
+                  setDateFilterMode(mode);
+                  if (mode === 'all') {
+                    setSingleDate('');
+                    setStartDate('');
+                    setEndDate('');
+                  } else if (mode === 'single' && !singleDate && uniqueDates.length > 0) {
+                    setSingleDate(uniqueDates[0]);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium bg-white text-slate-700 cursor-pointer focus:ring-2 focus:ring-[#056c4c]/30"
+              >
+                <option value="all">Tất cả các ngày</option>
+                <option value="single">Chọn 1 ngày cụ thể</option>
+                <option value="range">Chọn khoảng ngày (Từ ngày – Đến ngày)</option>
+                <option value="cycle-curr">Kỳ sao kê này (09/10 – 08/11/2026)</option>
+                <option value="cycle-prev">Kỳ sao kê trước (09/09 – 08/10/2026)</option>
+              </select>
+
+              {/* Input for single date */}
+              {dateFilterMode === 'single' && (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="date"
+                    value={singleDate}
+                    onChange={(e) => setSingleDate(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 font-semibold cursor-pointer focus:ring-2 focus:ring-[#056c4c]/30"
+                  />
+                  {singleDate && (
+                    <button
+                      onClick={() => setSingleDate('')}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                      title="Bỏ chọn ngày"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Inputs for range */}
+              {dateFilterMode === 'range' && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <span>Từ:</span>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 font-medium cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <span>Đến:</span>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs bg-white text-slate-800 font-medium cursor-pointer"
+                    />
+                  </div>
+                  {(startDate || endDate) && (
+                    <button
+                      onClick={() => { setStartDate(''); setEndDate(''); }}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                      title="Xóa khoảng ngày"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Clear filter button if active */}
+            {dateFilterMode !== 'all' && (
+              <button
+                onClick={() => {
+                  setDateFilterMode('all');
+                  setSingleDate('');
+                  setStartDate('');
+                  setEndDate('');
+                }}
+                className="text-xs text-rose-600 hover:text-rose-800 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Bỏ lọc ngày</span>
+              </button>
+            )}
+          </div>
+
+          {/* Quick Date Chips when in 'single' date mode */}
+          {dateFilterMode === 'single' && uniqueDates.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 text-xs">
+              <span className="text-[11px] text-slate-400 shrink-0">Ngày có giao dịch:</span>
+              {uniqueDates.slice(0, 12).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setSingleDate(d)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors shrink-0 cursor-pointer ${
+                    singleDate === d
+                      ? 'bg-[#056c4c] text-white shadow-2xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  {formatDateVN(d)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
-          <span>Tìm thấy <strong>{filteredTransactions.length}</strong> giao dịch</span>
+          <span>
+            Tìm thấy <strong>{filteredTransactions.length}</strong> giao dịch
+            {dateFilterMode === 'single' && singleDate && ` ngày ${formatDateVN(singleDate)}`}
+            {dateFilterMode === 'range' && (startDate || endDate) && ` (${startDate ? formatDateVN(startDate) : 'Từ trước'} – ${endDate ? formatDateVN(endDate) : 'Hiện tại'})`}
+            {dateFilterMode === 'cycle-curr' && ' trong kỳ sao kê này (09/10 – 08/11/2026)'}
+            {dateFilterMode === 'cycle-prev' && ' trong kỳ sao kê trước (09/09 – 08/10/2026)'}
+          </span>
 
           {transactions.length > 0 && onClearAllTransactions && (
             <button
