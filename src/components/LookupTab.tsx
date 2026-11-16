@@ -135,10 +135,10 @@ export const LookupTab: React.FC<LookupTabProps> = ({
             <button
               onClick={onLoadRealMBTransactions}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
-              title="Khôi phục hoặc nạp 38 giao dịch sao kê thực tế từ app MB Bank"
+              title="Khôi phục hoặc nạp toàn bộ 69 giao dịch sao kê thực tế từ app MB Bank"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Nạp 38 giao dịch MB Bank</span>
+              <span>Nạp 69 giao dịch MB Bank</span>
             </button>
           )}
 
@@ -282,7 +282,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
                   className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold shadow-xs cursor-pointer transition-colors"
                 >
                   <Sparkles className="w-4 h-4 text-amber-600" />
-                  <span>Nạp 38 giao dịch từ ảnh sao kê MB Bank (kèm MCC)</span>
+                  <span>Nạp 69 giao dịch từ ảnh sao kê MB Bank (kỳ này &amp; kỳ trước)</span>
                 </button>
               )}
               <button

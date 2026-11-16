@@ -93,11 +93,22 @@ export function loadTransactions(): Transaction[] {
     }
 
     if (Array.isArray(parsed)) {
+      // If we added new transactions to REAL_MB_TRANSACTIONS (e.g. previous cycle mb-real-39 to mb-real-69),
+      // seamlessly merge any missing real transactions without losing user's existing data
+      const existingIds = new Set(parsed.map((t: Transaction) => t.id));
+      const missingReal = getRealWithCardId().filter(t => !existingIds.has(t.id));
+      
+      let merged = parsed;
+      if (missingReal.length > 0 && !userExplicitlyCleared) {
+        merged = [...parsed, ...missingReal];
+        saveTransactions(merged);
+      }
+
       // Ensure all transactions have valid cardId mapping to user's card if user has only 1 card
       if (cards.length === 1) {
-        return parsed.map((t: Transaction) => ({ ...t, cardId: targetCardId }));
+        return merged.map((t: Transaction) => ({ ...t, cardId: targetCardId }));
       }
-      return parsed;
+      return merged;
     }
     return [];
   } catch (e) {

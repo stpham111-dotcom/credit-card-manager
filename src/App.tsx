@@ -303,7 +303,7 @@ export function App() {
     localStorage.removeItem('hoantien_user_cleared_all_tx');
     const realTxs = resetToRealMBTransactions();
     setTransactions(realTxs);
-    showSaveSuccess('Đã nạp 38 giao dịch sao kê thực tế từ app MB Bank!');
+    showSaveSuccess('Đã nạp đầy đủ 69 giao dịch thực tế từ app MB Bank (kỳ này & kỳ trước)!');
   };
 
   const handleOpenEditCard = (card: CreditCard) => {
