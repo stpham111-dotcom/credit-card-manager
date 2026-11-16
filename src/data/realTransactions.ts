@@ -1,4 +1,4 @@
-﻿import { Transaction } from '../types';
+import { Transaction } from '../types';
 
 export const REAL_MB_TRANSACTIONS: Transaction[] = [
   // 12/11/2026 (Ảnh 6)

@@ -32,7 +32,16 @@ import { LookupTab } from './components/LookupTab';
 import { SettingsTab } from './components/SettingsTab';
 import { TransactionModal } from './components/TransactionModal';
 import { CardModal } from './components/CardModal';
+import { CloudSyncModal } from './components/CloudSyncModal';
 import { POPULAR_CARD_PRESETS } from './data/defaultCards';
+import { 
+  CloudSyncConfig, 
+  loadCloudSyncConfig, 
+  saveCloudSyncConfig, 
+  uploadToCloud, 
+  downloadFromCloud, 
+  applySyncPayload 
+} from './services/cloudSync';
 
 const TAB_ROUTES: Record<ViewTab, string> = {
   overview: '#/',
@@ -126,16 +135,71 @@ export function App() {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
+  const [cloudSyncConfig, setCloudSyncConfig] = useState<CloudSyncConfig>(() => loadCloudSyncConfig());
 
   const showSaveSuccess = (message: string) => {
     setSaveToast(message);
     setTimeout(() => setSaveToast(null), 2500);
   };
 
-  // Mark app initialized once mounted
+  // Mark app initialized once mounted & pull latest cloud data if enabled
   useEffect(() => {
     markAppInitialized();
+
+    const cfg = loadCloudSyncConfig();
+    if (cfg.enabled && cfg.syncKey && cfg.autoSync) {
+      downloadFromCloud(cfg.syncKey).then((res) => {
+        if (res.success && res.data) {
+          const applied = applySyncPayload(res.data);
+          if (applied) {
+            setCards(loadCards());
+            setTransactions(loadTransactions());
+            setCategories(loadCategories());
+            setDisplayOptions(loadDisplayOptions());
+            setCloudSyncConfig(prev => ({
+              ...prev,
+              lastSyncedAt: res.data.updatedAt || new Date().toISOString(),
+              lastSyncStatus: 'success',
+            }));
+          }
+        }
+      });
+    }
   }, []);
+
+  // Debounced auto-upload to cloud when local data changes
+  useEffect(() => {
+    if (!cloudSyncConfig.enabled || !cloudSyncConfig.autoSync || !cloudSyncConfig.syncKey) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const res = await uploadToCloud(cloudSyncConfig.syncKey);
+      if (res.success) {
+        setCloudSyncConfig((prev) => {
+          const next = {
+            ...prev,
+            lastSyncedAt: res.updatedAt || new Date().toISOString(),
+            lastSyncStatus: 'success' as const,
+          };
+          saveCloudSyncConfig(next);
+          return next;
+        });
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [cards, transactions, cloudSyncConfig.enabled, cloudSyncConfig.autoSync, cloudSyncConfig.syncKey]);
+
+  const handleDataSynced = () => {
+    setCards(loadCards());
+    setTransactions(loadTransactions());
+    setCategories(loadCategories());
+    setDisplayOptions(loadDisplayOptions());
+    setCloudSyncConfig(loadCloudSyncConfig());
+    showSaveSuccess('Đã đồng bộ dữ liệu đám mây thành công!');
+  };
 
   // Save changes to localStorage
   const handleUpdateDisplayOptions = (newOptions: DisplayOptions) => {
@@ -345,6 +409,8 @@ export function App() {
           }}
           onExportReport={handleExportCSVReport}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+          onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
+          cloudSyncConfig={cloudSyncConfig}
         />
 
         {/* Tab Router */}
@@ -458,6 +524,15 @@ export function App() {
         }}
         onSave={handleSaveCard}
         editingCard={editingCard}
+      />
+
+      <CloudSyncModal
+        isOpen={isCloudSyncModalOpen}
+        onClose={() => {
+          setIsCloudSyncModalOpen(false);
+          setCloudSyncConfig(loadCloudSyncConfig());
+        }}
+        onDataSynced={handleDataSynced}
       />
     </div>
   );

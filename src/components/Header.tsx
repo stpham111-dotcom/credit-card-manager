@@ -1,12 +1,15 @@
 import React from 'react';
-import { Download, Plus, Menu } from 'lucide-react';
+import { Download, Plus, Menu, Cloud } from 'lucide-react';
 import { ViewTab } from '../types';
+import { CloudSyncConfig } from '../services/cloudSync';
 
 interface HeaderProps {
   currentTab: ViewTab;
   onOpenAddCard: () => void;
   onExportReport: () => void;
   onOpenMobileMenu: () => void;
+  onOpenCloudSync?: () => void;
+  cloudSyncConfig?: CloudSyncConfig;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -14,6 +17,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddCard,
   onExportReport,
   onOpenMobileMenu,
+  onOpenCloudSync,
+  cloudSyncConfig,
 }) => {
   const getTabTitles = () => {
     switch (currentTab) {
@@ -98,7 +103,29 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 self-end sm:self-auto">
+      <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
+        {onOpenCloudSync && (
+          <button
+            onClick={onOpenCloudSync}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 border text-xs sm:text-sm font-medium rounded-xl shadow-2xs transition-all cursor-pointer ${
+              cloudSyncConfig?.enabled
+                ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+            }`}
+            title={
+              cloudSyncConfig?.enabled
+                ? `Đồng bộ đám mây đang bật (Mã: ${cloudSyncConfig.syncKey})`
+                : 'Bấm để bật đồng bộ đám mây giữa điện thoại và máy tính'
+            }
+          >
+            <Cloud className={`w-3.5 h-3.5 ${cloudSyncConfig?.enabled ? 'text-emerald-600' : 'text-slate-500'}`} />
+            <span>{cloudSyncConfig?.enabled ? 'Đồng bộ: Bật' : 'Đồng bộ Đám mây'}</span>
+            {cloudSyncConfig?.enabled && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse ml-0.5" />
+            )}
+          </button>
+        )}
+
         <button
           onClick={onExportReport}
           className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs sm:text-sm font-medium rounded-xl shadow-2xs transition-colors cursor-pointer"
