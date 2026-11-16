@@ -138,15 +138,17 @@ export function analyzeCardCycle(
     t => t.cardId === card.id && isDateWithin(t.date, cycle.startDate, cycle.endDate)
   );
 
-  const totalSpent = transactionsInCycle.reduce((sum, t) => sum + t.amount, 0);
+  // Separate expense (TIỀN RA) from income (TIỀN VÀO / thanh toán thẻ / hoàn tiền)
+  const expenseTransactions = transactionsInCycle.filter(t => t.type !== 'income');
+  const totalSpent = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
   const policy = card.cashbackPolicy;
   const minSpend = policy.minCycleSpendToQualify || 0;
   const isQualified = totalSpent >= minSpend;
   const spendNeededToQualify = isQualified ? 0 : Math.max(0, minSpend - totalSpent);
 
-  // Group by category
+  // Group by category for expenses
   const spendByCategory = new Map<string, number>();
-  transactionsInCycle.forEach(t => {
+  expenseTransactions.forEach(t => {
     spendByCategory.set(t.categoryId, (spendByCategory.get(t.categoryId) || 0) + t.amount);
   });
 
@@ -164,7 +166,7 @@ export function analyzeCardCycle(
     let tiktokSpent = 0;
     let otherSpent = 0;
 
-    transactionsInCycle.forEach(t => {
+    expenseTransactions.forEach(t => {
       if (t.categoryId === 'shopee') {
         shopeeSpent += t.amount;
       } else if (t.categoryId === 'tiktok_shop') {

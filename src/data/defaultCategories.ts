@@ -59,16 +59,23 @@ export const DEFAULT_CATEGORIES: SpendingCategory[] = [
   },
   {
     id: 'bills',
-    name: 'Hóa đơn & Tiện ích',
+    name: 'Hóa đơn & Tiện ích (Điện, nước...)',
     iconName: 'Receipt',
     color: '#06b6d4',
-    description: 'Điện, nước, internet, truyền hình cáp, nạp tiền điện thoại',
+    description: 'EVN Điện lực, nước, internet, truyền hình, nạp tiền điện thoại',
+  },
+  {
+    id: 'payment',
+    name: 'Thanh toán thẻ / Hoàn tiền',
+    iconName: 'CreditCard',
+    color: '#10b981',
+    description: 'Thanh toán dư nợ sao kê thẻ tín dụng, hoàn tiền trả hàng ShopeePay',
   },
   {
     id: 'other',
-    name: 'Chi tiêu khác (Lĩnh vực khác)',
+    name: 'Chi tiêu khác (Thời trang, dịch vụ...)',
     iconName: 'Tag',
     color: '#64748b',
-    description: 'Các giao dịch thanh toán POS hoặc trực tuyến ở lĩnh vực khác',
+    description: 'Mua sắm thời trang Uniqlo, đồ gia dụng, POS hoặc trực tuyến ở lĩnh vực khác',
   },
 ];

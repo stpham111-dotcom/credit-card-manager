@@ -362,10 +362,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-[#056c4c]" />
                     <div>
-                      <span className="font-bold text-slate-800 text-sm block">
-                        {tx.note || 'Chi tiêu thẻ'}
-                      </span>
-                      <span className="text-slate-400 text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-800 text-sm">
+                          {tx.note || 'Chi tiêu thẻ'}
+                        </span>
+                        {tx.mcc && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-slate-800 text-amber-300">
+                            MCC {tx.mcc}
+                          </span>
+                        )}
+                        {tx.type === 'income' && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-emerald-100 text-emerald-800">
+                            TIỀN VÀO
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-slate-400 text-[11px] block mt-0.5">
                         {formatDateVN(tx.date)} &bull; {card?.bankName} ({card?.cardName})
                       </span>
                     </div>
@@ -373,12 +385,20 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <span className="font-bold text-slate-900 block text-sm">
-                        -{formatVND(tx.amount)}
-                      </span>
-                      <span className="text-[#056c4c] font-semibold text-[11px]">
-                        +{formatVND(tx.cashbackEarned)} ({tx.cashbackRate}%)
-                      </span>
+                      {tx.type === 'income' ? (
+                        <span className="font-bold text-emerald-600 block text-sm">
+                          +{formatVND(tx.amount)}
+                        </span>
+                      ) : (
+                        <span className="font-bold text-slate-900 block text-sm">
+                          -{formatVND(tx.amount)}
+                        </span>
+                      )}
+                      {tx.type !== 'income' && tx.cashbackEarned > 0 && (
+                        <span className="text-[#056c4c] font-semibold text-[11px]">
+                          +{formatVND(tx.cashbackEarned)} ({tx.cashbackRate}%)
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1">

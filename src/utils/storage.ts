@@ -1,6 +1,7 @@
 import { CreditCard, Transaction, SpendingCategory, DisplayOptions } from '../types';
 import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
 import { INITIAL_SAMPLE_CARDS } from '../data/defaultCards';
+import { REAL_MB_TRANSACTIONS } from '../data/realTransactions';
 
 const INITIALIZED_FLAG = 'hoantien_initialized_v2';
 const CARDS_KEY = 'hoantien_cards_v2';
@@ -68,15 +69,17 @@ export function loadTransactions(): Transaction[] {
   try {
     const raw = localStorage.getItem(TRANSACTIONS_KEY);
     if (raw === null) {
-      const legacy = localStorage.getItem('hoantien_transactions_v1');
-      if (legacy) {
-        const parsed = JSON.parse(legacy);
-        saveTransactions(parsed);
-        return parsed;
-      }
-      return [];
+      saveTransactions(REAL_MB_TRANSACTIONS);
+      return REAL_MB_TRANSACTIONS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    // If the storage still has the old mock transactions without MCC, auto-migrate to the user's real transactions from screenshots
+    const hasReal = Array.isArray(parsed) && parsed.some((t: Transaction) => t.id.startsWith('mb-real-') || t.mcc !== undefined);
+    if (!hasReal && Array.isArray(parsed) && parsed.length > 0) {
+      saveTransactions(REAL_MB_TRANSACTIONS);
+      return REAL_MB_TRANSACTIONS;
+    }
+    return parsed;
   } catch (e) {
     console.error('Error loading transactions from storage', e);
     return [];
@@ -155,178 +158,14 @@ export function seedMBJCBSampleFlow(targetCardId?: string): Transaction[] {
     : cards.find(c => c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb'));
   
   const cardId = mbCard ? mbCard.id : 'card-sample-mb-jcb';
-
-  const today = new Date();
-  const formatD = (offsetDays: number) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - offsetDays);
-    return d.toISOString().split('T')[0];
-  };
-
-  const mbSampleTx: Transaction[] = [
-    {
-      id: `tx-mb-1-${Date.now()}`,
-      cardId,
-      amount: 2350000,
-      date: formatD(2),
-      categoryId: 'shopee',
-      note: 'Mua sắm đồ gia dụng Shopee (MID: 000109900005175)',
-      cashbackEarned: 235000,
-      cashbackRate: 10,
-    },
-    {
-      id: `tx-mb-2-${Date.now()}`,
-      cardId,
-      amount: 2150000,
-      date: formatD(4),
-      categoryId: 'tiktok_shop',
-      note: 'Mua sắm thời trang TikTok Shop (MCC 5399)',
-      cashbackEarned: 215000,
-      cashbackRate: 10,
-    },
-    {
-      id: `tx-mb-3-${Date.now()}`,
-      cardId,
-      amount: 1350000,
-      date: formatD(6),
-      categoryId: 'dining',
-      note: 'Ăn tối nhà hàng Gogi House (Apple Pay)',
-      cashbackEarned: 0,
-      cashbackRate: 0,
-    },
-    {
-      id: `tx-mb-4-${Date.now()}`,
-      cardId,
-      amount: 1150000,
-      date: formatD(1),
-      categoryId: 'supermarket',
-      note: 'Siêu thị Winmart Times City (Lĩnh vực khác)',
-      cashbackEarned: 0,
-      cashbackRate: 0,
-    },
-  ];
-
-  const currentTx = loadTransactions();
-  // Keep non-mb transactions or append
-  const otherTx = currentTx.filter(t => t.cardId !== cardId);
-  const combined = [...mbSampleTx, ...otherTx];
-  saveTransactions(combined);
-  return combined;
+  const updatedReal = REAL_MB_TRANSACTIONS.map(t => ({ ...t, cardId }));
+  saveTransactions(updatedReal);
+  return updatedReal;
 }
 
 export function seedSampleData(): { cards: CreditCard[]; transactions: Transaction[] } {
   const cards = INITIAL_SAMPLE_CARDS;
-  const today = new Date();
-  const formatD = (offsetDays: number) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - offsetDays);
-    return d.toISOString().split('T')[0];
-  };
-
-  const sampleTransactions: Transaction[] = [
-    // MB JCB Platinum realistic spending flow
-    {
-      id: 'tx-mb-1',
-      cardId: 'card-sample-mb-jcb',
-      amount: 2350000,
-      date: formatD(2),
-      categoryId: 'shopee',
-      note: 'Mua sắm gia dụng Shopee (MID: 000109900005175)',
-      cashbackEarned: 235000,
-      cashbackRate: 10,
-    },
-    {
-      id: 'tx-mb-2',
-      cardId: 'card-sample-mb-jcb',
-      amount: 2150000,
-      date: formatD(4),
-      categoryId: 'tiktok_shop',
-      note: 'Mua sắm thời trang TikTok Shop (MCC 5399)',
-      cashbackEarned: 215000,
-      cashbackRate: 10,
-    },
-    {
-      id: 'tx-mb-3',
-      cardId: 'card-sample-mb-jcb',
-      amount: 1350000,
-      date: formatD(6),
-      categoryId: 'dining',
-      note: 'Ăn tối nhà hàng Gogi House (Apple Pay)',
-      cashbackEarned: 0,
-      cashbackRate: 0,
-    },
-    {
-      id: 'tx-mb-4',
-      cardId: 'card-sample-mb-jcb',
-      amount: 1150000,
-      date: formatD(1),
-      categoryId: 'supermarket',
-      note: 'Siêu thị Winmart Times City (Lĩnh vực khác)',
-      cashbackEarned: 0,
-      cashbackRate: 0,
-    },
-    // Other cards
-    {
-      id: 'tx-1',
-      cardId: 'card-sample-1',
-      amount: 1450000,
-      date: formatD(2),
-      categoryId: 'dining',
-      note: 'Ăn tối lẩu Haidilao Landmark',
-      cashbackEarned: 145000,
-      cashbackRate: 10,
-    },
-    {
-      id: 'tx-2',
-      cardId: 'card-sample-1',
-      amount: 850000,
-      date: formatD(5),
-      categoryId: 'supermarket',
-      note: 'Siêu thị Winmart cuối tuần',
-      cashbackEarned: 42500,
-      cashbackRate: 5,
-    },
-    {
-      id: 'tx-3',
-      cardId: 'card-sample-1',
-      amount: 1200000,
-      date: formatD(8),
-      categoryId: 'dining',
-      note: 'Nhà hàng Pizza 4P’s',
-      cashbackEarned: 120000,
-      cashbackRate: 10,
-    },
-    {
-      id: 'tx-4',
-      cardId: 'card-sample-2',
-      amount: 2100000,
-      date: formatD(3),
-      categoryId: 'online_shopping',
-      note: 'Mua sắm đồ gia dụng Shopee Mall',
-      cashbackEarned: 315000,
-      cashbackRate: 15,
-    },
-    {
-      id: 'tx-5',
-      cardId: 'card-sample-2',
-      amount: 500000,
-      date: formatD(7),
-      categoryId: 'transport',
-      note: 'Đổ xăng Petrolimex',
-      cashbackEarned: 25000,
-      cashbackRate: 5,
-    },
-    {
-      id: 'tx-6',
-      cardId: 'card-sample-1',
-      amount: 2500000,
-      date: formatD(12),
-      categoryId: 'other',
-      note: 'Bảo dưỡng xe máy Honda',
-      cashbackEarned: 12500,
-      cashbackRate: 0.5,
-    },
-  ];
+  const sampleTransactions: Transaction[] = REAL_MB_TRANSACTIONS;
 
   saveCards(cards);
   saveTransactions(sampleTransactions);

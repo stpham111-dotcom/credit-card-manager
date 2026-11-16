@@ -42,6 +42,8 @@ export interface Transaction {
   date: string; // ISO date 'YYYY-MM-DD'
   categoryId: string;
   note?: string;
+  mcc?: string; // Merchant Category Code (e.g., '5262', '5411', '5691', '2012')
+  type?: 'expense' | 'income'; // 'expense': TIỀN RA (-), 'income': TIỀN VÀO (+)
   cashbackEarned: number; // Calculated cashback for this transaction
   cashbackRate: number; // Percentage applied
   isExcludedFromCashback?: boolean;

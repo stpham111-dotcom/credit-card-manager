@@ -54,6 +54,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
         const matchSearch =
           !searchTerm ||
           (t.note && t.note.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (t.mcc && t.mcc.includes(searchTerm)) ||
           t.amount.toString().includes(searchTerm.replace(/\D/g, ''));
 
         const matchCard = selectedCardId === 'all' || t.cardId === selectedCardId;
@@ -288,10 +289,24 @@ export const LookupTab: React.FC<LookupTabProps> = ({
                     </div>
 
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <span className="font-bold text-sm text-slate-900">
                           {tx.note || cat?.name || 'Chi tiêu thẻ'}
                         </span>
+                        {tx.type === 'income' ? (
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold">
+                            TIỀN VÀO
+                          </span>
+                        ) : (
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">
+                            TIỀN RA
+                          </span>
+                        )}
+                        {tx.mcc && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold bg-slate-800 text-amber-300">
+                            MCC {tx.mcc}
+                          </span>
+                        )}
                         <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">
                           {cat?.name}
                         </span>
@@ -310,12 +325,20 @@ export const LookupTab: React.FC<LookupTabProps> = ({
                   <div className="flex items-center justify-between sm:justify-end gap-5">
                     {/* Amounts */}
                     <div className="text-left sm:text-right">
-                      <span className="text-base font-bold text-slate-900 block">
-                        -{formatVND(tx.amount)}
-                      </span>
-                      <span className="text-xs font-semibold text-[#056c4c]">
-                        +{formatVND(tx.cashbackEarned)} ({tx.cashbackRate}%)
-                      </span>
+                      {tx.type === 'income' ? (
+                        <span className="text-base font-bold text-emerald-600 block">
+                          +{formatVND(tx.amount)}
+                        </span>
+                      ) : (
+                        <span className="text-base font-bold text-slate-900 block">
+                          -{formatVND(tx.amount)}
+                        </span>
+                      )}
+                      {tx.type !== 'income' && tx.cashbackEarned > 0 && (
+                        <span className="text-xs font-semibold text-[#056c4c]">
+                          +{formatVND(tx.cashbackEarned)} ({tx.cashbackRate}%)
+                        </span>
+                      )}
                     </div>
 
                     {/* Actions: Edit & Delete */}
