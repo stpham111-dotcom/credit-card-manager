@@ -10,8 +10,9 @@ interface TransactionModalProps {
   onClose: () => void;
   cards: CreditCard[];
   categories: SpendingCategory[];
-  onSave: (transaction: Omit<Transaction, 'id'>) => void;
+  onSave: (transaction: Omit<Transaction, 'id'>, existingId?: string) => void;
   preselectedCardId?: string;
+  editingTransaction?: Transaction | null;
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
@@ -21,6 +22,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   categories,
   onSave,
   preselectedCardId,
+  editingTransaction,
 }) => {
   const [selectedCardId, setSelectedCardId] = useState<string>('');
   const [amountStr, setAmountStr] = useState<string>('');
@@ -30,19 +32,27 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      if (preselectedCardId && cards.some(c => c.id === preselectedCardId)) {
-        setSelectedCardId(preselectedCardId);
-      } else if (cards.length > 0) {
-        setSelectedCardId(cards[0].id);
-      }
-      setAmountStr('');
-      setNote('');
-      setDateStr(new Date().toISOString().split('T')[0]);
-      if (categories.length > 0) {
-        setCategoryId(categories[0].id);
+      if (editingTransaction) {
+        setSelectedCardId(editingTransaction.cardId);
+        setAmountStr(editingTransaction.amount ? editingTransaction.amount.toLocaleString('vi-VN') : '');
+        setCategoryId(editingTransaction.categoryId);
+        setDateStr(editingTransaction.date || new Date().toISOString().split('T')[0]);
+        setNote(editingTransaction.note || '');
+      } else {
+        if (preselectedCardId && cards.some(c => c.id === preselectedCardId)) {
+          setSelectedCardId(preselectedCardId);
+        } else if (cards.length > 0) {
+          setSelectedCardId(cards[0].id);
+        }
+        setAmountStr('');
+        setNote('');
+        setDateStr(new Date().toISOString().split('T')[0]);
+        if (categories.length > 0) {
+          setCategoryId(categories[0].id);
+        }
       }
     }
-  }, [isOpen, preselectedCardId, cards, categories]);
+  }, [isOpen, preselectedCardId, cards, categories, editingTransaction]);
 
   if (!isOpen) return null;
 
@@ -76,9 +86,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       note: note.trim() || undefined,
       cashbackEarned: estimate.cashback,
       cashbackRate: estimate.rate,
-    });
+    }, editingTransaction ? editingTransaction.id : undefined);
 
-    if (estimate.cashback > 0) {
+    if (estimate.cashback > 0 && !editingTransaction) {
       confetti({
         particleCount: 40,
         spread: 60,
@@ -100,8 +110,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <Gift className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-800">Nhập giao dịch chi tiêu</h2>
-              <p className="text-xs text-slate-500">Tự động tính tiền hoàn theo chính sách thẻ</p>
+              <h2 className="text-base font-bold text-slate-800">
+                {editingTransaction ? 'Chỉnh sửa giao dịch' : 'Nhập giao dịch chi tiêu'}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {editingTransaction ? 'Cập nhật lại thông tin hoặc số tiền đã nhập nhầm' : 'Tự động tính tiền hoàn theo chính sách thẻ'}
+              </p>
             </div>
           </div>
           <button
@@ -244,7 +258,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               disabled={cards.length === 0 || rawAmount <= 0}
               className="px-6 py-2.5 rounded-xl bg-[#056c4c] hover:bg-[#04593e] disabled:opacity-50 text-white text-sm font-semibold shadow-xs transition-colors cursor-pointer"
             >
-              Lưu giao dịch
+              {editingTransaction ? 'Cập nhật giao dịch' : 'Lưu giao dịch'}
             </button>
           </div>
         </form>

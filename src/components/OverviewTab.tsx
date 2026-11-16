@@ -7,11 +7,15 @@ import {
   Check, 
   ChevronDown, 
   Plus, 
-  Sparkles 
+  Sparkles,
+  ReceiptText,
+  Trash2,
+  Edit3,
+  ArrowRight
 } from 'lucide-react';
 import { CreditCard, Transaction, DisplayOptions } from '../types';
 import { analyzeCardCycle, CardCycleAnalysis } from '../utils/cashbackCalculator';
-import { formatVND } from '../utils/formatters';
+import { formatVND, formatDateVN } from '../utils/formatters';
 import { CreditCardItem } from './CreditCardItem';
 
 interface OverviewTabProps {
@@ -23,6 +27,9 @@ interface OverviewTabProps {
   onOpenAddTransaction: (cardId?: string) => void;
   onEditCard: (card: CreditCard) => void;
   onSeedSampleData: () => void;
+  onEditTransaction?: (tx: Transaction) => void;
+  onDeleteTransaction?: (id: string) => void;
+  onViewAllTransactions?: () => void;
 }
 
 type SortOption = 'custom' | 'limit-desc' | 'spent-desc' | 'statement-asc' | 'cashback-desc';
@@ -36,8 +43,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onOpenAddTransaction,
   onEditCard,
   onSeedSampleData,
+  onEditTransaction,
+  onDeleteTransaction,
+  onViewAllTransactions,
 }) => {
   const [sortBy, setSortBy] = useState<SortOption>('custom');
+
+  const cardMap = useMemo(() => new Map(cards.map(c => [c.id, c])), [cards]);
+  const recentTransactions = useMemo(() => {
+    return [...transactions]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 5);
+  }, [transactions]);
 
   // Compute analysis for each active card
   const cardAnalyses: CardCycleAnalysis[] = useMemo(() => {
@@ -305,6 +322,95 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               onEditCard={onEditCard}
             />
           ))}
+        </div>
+      )}
+
+      {/* Recent Transactions Strip on Overview */}
+      {transactions.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#056c4c] flex items-center justify-center">
+                <ReceiptText className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-900">Giao dịch gần đây</h4>
+                <p className="text-xs text-slate-400">Xem nhanh các lần quẹt thẻ mới nhất, chỉnh sửa hoặc xóa nếu thêm nhầm</p>
+              </div>
+            </div>
+
+            {onViewAllTransactions && (
+              <button
+                onClick={onViewAllTransactions}
+                className="text-xs font-semibold text-[#056c4c] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <span>Xem tất cả ({transactions.length})</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {recentTransactions.map((tx) => {
+              const card = cardMap.get(tx.cardId);
+
+              return (
+                <div
+                  key={tx.id}
+                  className="py-3 flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-[#056c4c]" />
+                    <div>
+                      <span className="font-bold text-slate-800 text-sm block">
+                        {tx.note || 'Chi tiêu thẻ'}
+                      </span>
+                      <span className="text-slate-400 text-[11px]">
+                        {formatDateVN(tx.date)} &bull; {card?.bankName} ({card?.cardName})
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="font-bold text-slate-900 block text-sm">
+                        -{formatVND(tx.amount)}
+                      </span>
+                      <span className="text-[#056c4c] font-semibold text-[11px]">
+                        +{formatVND(tx.cashbackEarned)} ({tx.cashbackRate}%)
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {onEditTransaction && (
+                        <button
+                          onClick={() => onEditTransaction(tx)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                          title="Sửa giao dịch này"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+
+                      {onDeleteTransaction && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Xác nhận xóa giao dịch "${tx.note || 'Chi tiêu'}" (${formatVND(tx.amount)})?`)) {
+                              onDeleteTransaction(tx.id);
+                            }
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Xóa giao dịch này"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

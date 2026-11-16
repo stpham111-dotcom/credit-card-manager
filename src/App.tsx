@@ -42,6 +42,7 @@ export function App() {
 
   // Modals
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [preselectedCardId, setPreselectedCardId] = useState<string | undefined>();
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
@@ -126,15 +127,23 @@ export function App() {
     saveDisplayOptions(newOptions);
   };
 
-  const handleSaveTransaction = (newTxData: Omit<Transaction, 'id'>) => {
-    const newTx: Transaction = {
-      ...newTxData,
-      id: `tx-${Date.now()}`,
-    };
-    const updated = [newTx, ...transactions];
-    setTransactions(updated);
-    saveTransactions(updated);
-    showSaveSuccess('Đã lưu giao dịch vào bộ nhớ trình duyệt!');
+  const handleSaveTransaction = (newTxData: Omit<Transaction, 'id'>, existingId?: string) => {
+    if (existingId) {
+      const updated = transactions.map(t => t.id === existingId ? { ...newTxData, id: existingId } : t);
+      setTransactions(updated);
+      saveTransactions(updated);
+      showSaveSuccess('Đã cập nhật lại giao dịch thành công!');
+    } else {
+      const newTx: Transaction = {
+        ...newTxData,
+        id: `tx-${Date.now()}`,
+      };
+      const updated = [newTx, ...transactions];
+      setTransactions(updated);
+      saveTransactions(updated);
+      showSaveSuccess('Đã lưu giao dịch vào bộ nhớ trình duyệt!');
+    }
+    setEditingTransaction(null);
   };
 
   const handleDeleteTransaction = (id: string) => {
@@ -256,8 +265,21 @@ export function App() {
   };
 
   const handleOpenAddTxWithCard = (cardId?: string) => {
+    setEditingTransaction(null);
     setPreselectedCardId(cardId);
     setIsTransactionModalOpen(true);
+  };
+
+  const handleOpenEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setPreselectedCardId(tx.cardId);
+    setIsTransactionModalOpen(true);
+  };
+
+  const handleClearAllTransactions = () => {
+    setTransactions([]);
+    saveTransactions([]);
+    showSaveSuccess('Đã xóa toàn bộ lịch sử giao dịch!');
   };
 
   const handleOpenEditCard = (card: CreditCard) => {
@@ -315,6 +337,22 @@ export function App() {
             onOpenAddTransaction={handleOpenAddTxWithCard}
             onEditCard={handleOpenEditCard}
             onSeedSampleData={handleSeedSampleData}
+            onEditTransaction={handleOpenEditTransaction}
+            onDeleteTransaction={handleDeleteTransaction}
+            onViewAllTransactions={() => setCurrentTab('transactions')}
+          />
+        )}
+
+        {(currentTab === 'transactions' || currentTab === 'lookup') && (
+          <LookupTab
+            cards={cards}
+            categories={categories}
+            transactions={transactions}
+            onDeleteTransaction={handleDeleteTransaction}
+            onOpenAddTransaction={() => handleOpenAddTxWithCard()}
+            onEditTransaction={handleOpenEditTransaction}
+            onClearAllTransactions={handleClearAllTransactions}
+            onExportCSV={handleExportCSVReport}
           />
         )}
 
@@ -340,16 +378,6 @@ export function App() {
             categories={categories}
             transactions={transactions}
             onSelectCardToPay={handleRecommenderSelectCard}
-          />
-        )}
-
-        {currentTab === 'lookup' && (
-          <LookupTab
-            cards={cards}
-            categories={categories}
-            transactions={transactions}
-            onDeleteTransaction={handleDeleteTransaction}
-            onOpenAddTransaction={() => handleOpenAddTxWithCard()}
           />
         )}
 
@@ -384,11 +412,15 @@ export function App() {
       {/* Modals */}
       <TransactionModal
         isOpen={isTransactionModalOpen}
-        onClose={() => setIsTransactionModalOpen(false)}
+        onClose={() => {
+          setIsTransactionModalOpen(false);
+          setEditingTransaction(null);
+        }}
         cards={cards.filter(c => c.isActive)}
         categories={categories}
         onSave={handleSaveTransaction}
         preselectedCardId={preselectedCardId}
+        editingTransaction={editingTransaction}
       />
 
       <CardModal

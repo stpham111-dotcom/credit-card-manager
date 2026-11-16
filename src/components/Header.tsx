@@ -37,10 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
           title: 'Lựa chọn thẻ thông minh',
           subtitle: 'Nhập khoản chi tiêu sắp tới để tìm thẻ cho tỷ lệ hoàn tiền cao nhất và còn hạn mức',
         };
+      case 'transactions':
       case 'lookup':
         return {
-          title: 'Tra cứu lịch sử giao dịch',
-          subtitle: 'Lọc và tìm kiếm mọi khoản quẹt thẻ, kiểm tra số tiền hoàn từng giao dịch',
+          title: 'Lịch sử & Quản lý giao dịch',
+          subtitle: 'Xem lại toàn bộ các lần quẹt thẻ, chỉnh sửa hoặc xóa nhanh các giao dịch đã nhập nhầm',
         };
       case 'manage-cards':
         return {

@@ -70,6 +70,7 @@ export interface SpendingCategory {
 
 export type ViewTab = 
   | 'overview' 
+  | 'transactions'
   | 'statements' 
   | 'reports' 
   | 'recommender' 

@@ -12,7 +12,8 @@ import {
   Sliders, 
   Plus,
   Database,
-  X
+  X,
+  ReceiptText
 } from 'lucide-react';
 import { ViewTab } from '../types';
 
@@ -33,10 +34,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const mainNavItems = [
     { id: 'overview' as ViewTab, label: 'Tổng quan', icon: LayoutDashboard },
-    { id: 'statements' as ViewTab, label: 'Sao kê', icon: FileText },
+    { id: 'transactions' as ViewTab, label: 'Lịch sử giao dịch', icon: ReceiptText },
+    { id: 'statements' as ViewTab, label: 'Sao kê & Hạn trả', icon: FileText },
     { id: 'reports' as ViewTab, label: 'Báo cáo', icon: BarChart3 },
     { id: 'recommender' as ViewTab, label: 'Lựa chọn thẻ', icon: Star },
-    { id: 'lookup' as ViewTab, label: 'Tra cứu', icon: Search },
   ];
 
   const settingsNavItems = [
