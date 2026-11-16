@@ -26,8 +26,8 @@ export interface CloudSyncConfig {
 }
 
 export const DEFAULT_CLOUD_SYNC_CONFIG: CloudSyncConfig = {
-  enabled: false,
-  syncKey: '',
+  enabled: true,
+  syncKey: 'stpham',
   autoSync: true,
 };
 
@@ -35,7 +35,14 @@ export function loadCloudSyncConfig(): CloudSyncConfig {
   try {
     const raw = localStorage.getItem(CLOUD_SYNC_KEY);
     if (!raw) return DEFAULT_CLOUD_SYNC_CONFIG;
-    return { ...DEFAULT_CLOUD_SYNC_CONFIG, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_CLOUD_SYNC_CONFIG,
+      ...parsed,
+      syncKey: parsed.syncKey && parsed.syncKey.trim() ? parsed.syncKey.trim().toLowerCase() : 'stpham',
+      enabled: parsed.enabled !== undefined ? parsed.enabled : true,
+      autoSync: parsed.autoSync !== undefined ? parsed.autoSync : true,
+    };
   } catch {
     return DEFAULT_CLOUD_SYNC_CONFIG;
   }

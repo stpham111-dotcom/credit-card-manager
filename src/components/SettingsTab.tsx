@@ -13,12 +13,19 @@ import {
   Coins,
   FileText,
   TrendingUp,
-  Sliders
+  Sliders,
+  Cloud,
+  Database,
+  FileSpreadsheet,
+  Share2,
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react';
 import { CreditCard, SpendingCategory, ViewTab, DisplayOptions } from '../types';
-import { exportBackupJSON, importBackupJSON } from '../utils/storage';
+import { exportBackupJSON, importBackupJSON, exportTransactionsCSV } from '../utils/storage';
 import { formatVND } from '../utils/formatters';
 import { MBJCBPolicyModal } from './MBJCBPolicyModal';
+import { CloudSyncConfig } from '../services/cloudSync';
 
 interface SettingsTabProps {
   currentSubTab: ViewTab;
@@ -34,6 +41,10 @@ interface SettingsTabProps {
   onDataImported: () => void;
   onAddMBJCBCard?: () => void;
   onSeedMBJCBFlow?: () => void;
+  cloudSyncConfig?: CloudSyncConfig;
+  onOpenCloudSync?: () => void;
+  onResetRealMBTransactions?: () => void;
+  onExportCSV?: () => void;
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -50,6 +61,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onDataImported,
   onAddMBJCBCard,
   onSeedMBJCBFlow,
+  cloudSyncConfig,
+  onOpenCloudSync,
+  onResetRealMBTransactions,
+  onExportCSV,
 }) => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
@@ -61,6 +76,21 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     const a = document.createElement('a');
     a.href = url;
     a.download = `hoantien-credit-cards-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCSVFile = () => {
+    if (onExportCSV) {
+      onExportCSV();
+      return;
+    }
+    const csv = exportTransactionsCSV();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `giao-dich-the-tin-dung-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -393,13 +423,85 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       )}
 
-      {/* 6. Data Backup & Local Storage */}
+      {/* 6. Cloud Database & Live Sync */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#056c4c] flex items-center justify-center">
+              <Cloud className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Cơ sở dữ liệu Đám mây (Cloud Database)</h3>
+              <p className="text-xs text-slate-500">
+                Tự động lưu trữ trên Netlify Blobs &amp; đồng bộ hai chiều thời gian thực giữa điện thoại và máy tính
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+              cloudSyncConfig?.enabled
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-slate-100 text-slate-600 border-slate-200'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${cloudSyncConfig?.enabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+              {cloudSyncConfig?.enabled ? 'Đám mây đã kết nối' : 'Chưa bật đồng bộ'}
+            </span>
+          </div>
+        </div>
+
+        {/* Cloud Info Box */}
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <span className="text-slate-400 block mb-0.5">Mã đồng bộ hiện tại:</span>
+            <span className="font-bold text-slate-900 text-sm font-mono uppercase bg-white px-2 py-0.5 rounded border border-slate-200 inline-block">
+              {cloudSyncConfig?.syncKey || 'stpham'}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-slate-400 block mb-0.5">Trạng thái tự động:</span>
+            <span className="font-semibold text-emerald-700 flex items-center gap-1 mt-0.5">
+              <Check className="w-3.5 h-3.5" />
+              <span>Tự động sao lưu khi có thay đổi</span>
+            </span>
+          </div>
+
+          <div>
+            <span className="text-slate-400 block mb-0.5">Lần đồng bộ gần nhất:</span>
+            <span className="font-medium text-slate-700 mt-0.5 block">
+              {cloudSyncConfig?.lastSyncedAt
+                ? new Date(cloudSyncConfig.lastSyncedAt).toLocaleString('vi-VN')
+                : 'Đang duy trì'}
+            </span>
+          </div>
+        </div>
+
+        {onOpenCloudSync && (
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <button
+              onClick={onOpenCloudSync}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#056c4c] hover:bg-[#04593e] text-white text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Mở Trung tâm Đồng bộ Đám mây &amp; Lấy Link 1 chạm</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 7. Data Backup & Export Center */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-4">
-        <div>
-          <h3 className="text-base font-bold text-slate-900">Sao lưu, Khôi phục & Bảo mật dữ liệu</h3>
-          <p className="text-xs text-slate-500">
-            Dữ liệu được lưu trữ trực tiếp trên trình duyệt của bạn (LocalStorage), tuyệt đối bảo mật, không tải lên bất kỳ máy chủ bên thứ 3 nào.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <Database className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Sao lưu, Khôi phục &amp; Xuất dữ liệu</h3>
+            <p className="text-xs text-slate-500">
+              Xuất dữ liệu ra file JSON, tải file Excel CSV hoặc khôi phục dữ liệu gốc MB Bank khi cần
+            </p>
+          </div>
         </div>
 
         {importStatus && (
@@ -417,18 +519,37 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <span>Xuất file sao lưu (JSON)</span>
           </button>
 
+          <button
+            onClick={handleExportCSVFile}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Xuất báo cáo giao dịch (CSV / Excel)</span>
+          </button>
+
           <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs cursor-pointer transition-colors">
             <Upload className="w-4 h-4 text-slate-500" />
             <span>Khôi phục từ file JSON</span>
             <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
           </label>
 
+          {onResetRealMBTransactions && (
+            <button
+              onClick={onResetRealMBTransactions}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-[#056c4c] text-xs font-bold shadow-2xs cursor-pointer transition-colors"
+              title="Khôi phục chuẩn 79 giao dịch thực tế qua 4 chu kỳ sao kê MB Bank"
+            >
+              <RotateCcw className="w-4 h-4 text-[#056c4c]" />
+              <span>Khôi phục 79 GD gốc MB Bank</span>
+            </button>
+          )}
+
           <button
             onClick={onSeedSampleData}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-amber-900 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
           >
             <Sparkles className="w-4 h-4 text-amber-600" />
-            <span>Nạp lại dữ liệu thẻ & giao dịch mẫu</span>
+            <span>Nạp lại dữ liệu mẫu</span>
           </button>
         </div>
       </div>

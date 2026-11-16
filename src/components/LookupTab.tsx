@@ -49,7 +49,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
   const [selectedCardId, setSelectedCardId] = useState('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState('all');
   const [sortBy, setSortBy] = useState<SortField>('date-desc');
-  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'cycle-curr' | 'cycle-prev' | 'cycle-first' | 'single' | 'range'>('all');
+  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'cycle-now' | 'cycle-curr' | 'cycle-prev' | 'cycle-first' | 'single' | 'range'>('all');
   const [singleDate, setSingleDate] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -79,9 +79,11 @@ export const LookupTab: React.FC<LookupTabProps> = ({
         const matchCard = selectedCardId === 'all' || t.cardId === selectedCardId;
         const matchCategory = selectedCategoryId === 'all' || t.categoryId === selectedCategoryId;
 
-        // Date filter
+        // Date filter across 4 cycles
         let matchDate = true;
-        if (dateFilterMode === 'cycle-curr') {
+        if (dateFilterMode === 'cycle-now') {
+          matchDate = t.date >= '2026-11-09' && t.date <= '2026-12-08';
+        } else if (dateFilterMode === 'cycle-curr') {
           matchDate = t.date >= '2026-10-09' && t.date <= '2026-11-08';
         } else if (dateFilterMode === 'cycle-prev') {
           matchDate = t.date >= '2026-09-09' && t.date <= '2026-10-08';
@@ -165,10 +167,10 @@ export const LookupTab: React.FC<LookupTabProps> = ({
             <button
               onClick={onLoadRealMBTransactions}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
-              title="Khôi phục hoặc nạp toàn bộ 69 giao dịch sao kê thực tế từ app MB Bank"
+              title="Khôi phục hoặc nạp toàn bộ 79 giao dịch sao kê thực tế từ app MB Bank qua 4 chu kỳ"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Nạp 69 giao dịch MB Bank</span>
+              <span>Nạp 79 giao dịch MB Bank</span>
             </button>
           )}
 
@@ -306,8 +308,9 @@ export const LookupTab: React.FC<LookupTabProps> = ({
                 <option value="all">Tất cả các ngày</option>
                 <option value="single">Chọn 1 ngày cụ thể</option>
                 <option value="range">Chọn khoảng ngày (Từ ngày – Đến ngày)</option>
-                <option value="cycle-curr">Kỳ sao kê này (09/10 – 08/11/2026)</option>
-                <option value="cycle-prev">Kỳ sao kê trước (09/09 – 08/10/2026)</option>
+                <option value="cycle-now">Kỳ hiện tại (09/11 – 08/12/2026)</option>
+                <option value="cycle-curr">Kỳ vừa chốt (09/10 – 08/11/2026)</option>
+                <option value="cycle-prev">Kỳ trước (09/09 – 08/10/2026)</option>
                 <option value="cycle-first">Kỳ mở thẻ đầu tiên (09/08 – 08/09/2026)</option>
               </select>
 

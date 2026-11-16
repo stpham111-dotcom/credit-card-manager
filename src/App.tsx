@@ -132,6 +132,8 @@ export function App() {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [preselectedCardId, setPreselectedCardId] = useState<string | undefined>();
+  const [recommenderAmount, setRecommenderAmount] = useState<number | undefined>();
+  const [recommenderCategoryId, setRecommenderCategoryId] = useState<string | undefined>();
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -202,6 +204,17 @@ export function App() {
               lastSyncStatus: 'success',
             }));
           }
+        } else if (!res.found) {
+          // If the cloud blob doesn't exist yet, seed it immediately with local payload
+          uploadToCloud(cfg.syncKey).then((upRes) => {
+            if (upRes.success) {
+              setCloudSyncConfig(prev => ({
+                ...prev,
+                lastSyncedAt: upRes.updatedAt || new Date().toISOString(),
+                lastSyncStatus: 'success',
+              }));
+            }
+          });
         }
       });
     }
@@ -386,12 +399,16 @@ export function App() {
   const handleOpenAddTxWithCard = (cardId?: string) => {
     setEditingTransaction(null);
     setPreselectedCardId(cardId);
+    setRecommenderAmount(undefined);
+    setRecommenderCategoryId(undefined);
     setIsTransactionModalOpen(true);
   };
 
   const handleOpenEditTransaction = (tx: Transaction) => {
     setEditingTransaction(tx);
     setPreselectedCardId(tx.cardId);
+    setRecommenderAmount(undefined);
+    setRecommenderCategoryId(undefined);
     setIsTransactionModalOpen(true);
   };
 
@@ -406,7 +423,7 @@ export function App() {
     localStorage.removeItem('hoantien_user_cleared_all_tx');
     const realTxs = resetToRealMBTransactions();
     setTransactions(realTxs);
-    showSaveSuccess('Đã nạp đầy đủ 69 giao dịch thực tế từ app MB Bank (kỳ này & kỳ trước)!');
+    showSaveSuccess('Đã nạp đầy đủ 79 giao dịch thực tế từ app MB Bank qua 4 chu kỳ!');
   };
 
   const handleOpenEditCard = (card: CreditCard) => {
@@ -414,8 +431,11 @@ export function App() {
     setIsCardModalOpen(true);
   };
 
-  const handleRecommenderSelectCard = (cardId: string) => {
+  const handleRecommenderSelectCard = (cardId: string, amount?: number, categoryId?: string) => {
     setPreselectedCardId(cardId);
+    setRecommenderAmount(amount);
+    setRecommenderCategoryId(categoryId);
+    setEditingTransaction(null);
     setIsTransactionModalOpen(true);
   };
 
@@ -537,6 +557,10 @@ export function App() {
             }}
             onAddMBJCBCard={handleAddMBJCBCard}
             onSeedMBJCBFlow={handleSeedMBJCBFlow}
+            cloudSyncConfig={cloudSyncConfig}
+            onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
+            onResetRealMBTransactions={handleLoadRealMBTransactions}
+            onExportCSV={handleExportCSVReport}
           />
         )}
       </main>
@@ -547,11 +571,15 @@ export function App() {
         onClose={() => {
           setIsTransactionModalOpen(false);
           setEditingTransaction(null);
+          setRecommenderAmount(undefined);
+          setRecommenderCategoryId(undefined);
         }}
         cards={cards.filter(c => c.isActive)}
         categories={categories}
         onSave={handleSaveTransaction}
         preselectedCardId={preselectedCardId}
+        initialAmount={recommenderAmount}
+        initialCategoryId={recommenderCategoryId}
         editingTransaction={editingTransaction}
       />
 

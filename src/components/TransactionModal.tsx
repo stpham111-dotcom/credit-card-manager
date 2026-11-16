@@ -12,6 +12,8 @@ interface TransactionModalProps {
   categories: SpendingCategory[];
   onSave: (transaction: Omit<Transaction, 'id'>, existingId?: string) => void;
   preselectedCardId?: string;
+  initialAmount?: number;
+  initialCategoryId?: string;
   editingTransaction?: Transaction | null;
 }
 
@@ -22,6 +24,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   categories,
   onSave,
   preselectedCardId,
+  initialAmount,
+  initialCategoryId,
   editingTransaction,
 }) => {
   const [selectedCardId, setSelectedCardId] = useState<string>('');
@@ -48,17 +52,19 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         } else if (cards.length > 0) {
           setSelectedCardId(cards[0].id);
         }
-        setAmountStr('');
+        setAmountStr(initialAmount ? initialAmount.toLocaleString('vi-VN') : '');
         setNote('');
         setMcc('');
         setTxType('expense');
         setDateStr(new Date().toISOString().split('T')[0]);
-        if (categories.length > 0) {
+        if (initialCategoryId && categories.some(c => c.id === initialCategoryId)) {
+          setCategoryId(initialCategoryId);
+        } else if (categories.length > 0) {
           setCategoryId(categories[0].id);
         }
       }
     }
-  }, [isOpen, preselectedCardId, cards, categories, editingTransaction]);
+  }, [isOpen, preselectedCardId, initialAmount, initialCategoryId, cards, categories, editingTransaction]);
 
   if (!isOpen) return null;
 

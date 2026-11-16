@@ -316,3 +316,27 @@ export function importBackupJSON(jsonStr: string): boolean {
     return false;
   }
 }
+
+export function exportTransactionsCSV(): string {
+  const txs = loadTransactions();
+  const cards = loadCards();
+  const cats = loadCategories();
+  const cardMap = new Map(cards.map(c => [c.id, `${c.bankName} ${c.cardName}`]));
+  const catMap = new Map(cats.map(c => [c.id, c.name]));
+
+  const headers = ['Mã GD', 'Ngày GD', 'Thẻ tín dụng', 'Danh mục', 'Loại biến động', 'Số tiền (VNĐ)', 'Mã MCC', 'Tiền hoàn (VNĐ)', 'Tỷ lệ %', 'Ghi chú / Đơn vị'];
+  const rows = txs.map(t => [
+    t.id,
+    t.date,
+    `"${(cardMap.get(t.cardId) || 'Thẻ tín dụng').replace(/"/g, '""')}"`,
+    `"${(catMap.get(t.categoryId) || 'Khác').replace(/"/g, '""')}"`,
+    t.type === 'income' ? 'Tiền vào (+)' : 'Tiền ra (-)',
+    t.amount,
+    t.mcc || '',
+    t.cashbackEarned,
+    `${t.cashbackRate}%`,
+    `"${(t.note || '').replace(/"/g, '""')}"`,
+  ]);
+
+  return '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+}
