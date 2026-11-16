@@ -147,6 +147,45 @@ export function App() {
   useEffect(() => {
     markAppInitialized();
 
+    // Check if user opened page with ?sync=KEY or #/?sync=KEY
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      let syncParam = urlParams.get('sync');
+      if (!syncParam && window.location.hash.includes('sync=')) {
+        const hashQuery = window.location.hash.split('?')[1];
+        if (hashQuery) {
+          const hashParams = new URLSearchParams(hashQuery);
+          syncParam = hashParams.get('sync');
+        }
+      }
+
+      if (syncParam && syncParam.trim().length >= 3) {
+        const cleanKey = syncParam.trim().toLowerCase();
+        downloadFromCloud(cleanKey).then((res) => {
+          if (res.success && res.data) {
+            applySyncPayload(res.data);
+            const newCfg: CloudSyncConfig = {
+              enabled: true,
+              syncKey: cleanKey,
+              autoSync: true,
+              lastSyncedAt: res.data.updatedAt || new Date().toISOString(),
+              lastSyncStatus: 'success',
+            };
+            saveCloudSyncConfig(newCfg);
+            setCloudSyncConfig(newCfg);
+            setCards(loadCards());
+            setTransactions(loadTransactions());
+            setCategories(loadCategories());
+            setDisplayOptions(loadDisplayOptions());
+            showSaveSuccess(`Đã tự động kết nối & đồng bộ với mã "${cleanKey}"!`);
+          }
+        });
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to parse sync param from URL', e);
+    }
+
     const cfg = loadCloudSyncConfig();
     if (cfg.enabled && cfg.syncKey && cfg.autoSync) {
       downloadFromCloud(cfg.syncKey).then((res) => {

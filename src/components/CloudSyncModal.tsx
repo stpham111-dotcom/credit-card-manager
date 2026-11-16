@@ -44,6 +44,16 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   const [autoSyncInput, setAutoSyncInput] = useState<boolean>(config.autoSync);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
+
+  const handleCopyLink = () => {
+    const cleanKey = syncKeyInput.trim().toLowerCase();
+    if (!cleanKey) return;
+    const url = `${window.location.origin}/#/?sync=${encodeURIComponent(cleanKey)}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -272,6 +282,23 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 </span>
               )}
             </div>
+
+            {/* One-click share link */}
+            {syncKeyInput.trim().length >= 3 && (
+              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                <span className="text-[11px] text-slate-500">
+                  Gửi link kết nối nhanh sang điện thoại:
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  {copiedLink ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Smartphone className="w-3.5 h-3.5" />}
+                  <span>{copiedLink ? 'Đã sao chép link!' : 'Sao chép Link 1 chạm'}</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons: Push & Pull */}
