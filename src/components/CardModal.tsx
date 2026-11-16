@@ -93,6 +93,8 @@ export const CardModal: React.FC<CardModalProps> = ({
     if (preset.creditLimit) setLimitStr(preset.creditLimit.toLocaleString('vi-VN'));
     if (preset.statementDay) setStatementDay(preset.statementDay);
     if (preset.paymentDueDaysAfter) setDueDays(preset.paymentDueDaysAfter);
+    if (preset.personalTargetSpend) setPersonalTargetStr(preset.personalTargetSpend.toLocaleString('vi-VN'));
+    if (preset.themeColor) setThemeColor(preset.themeColor);
     if (preset.cashbackPolicy) {
       setOverallCapStr(preset.cashbackPolicy.overallMaxCashback.toLocaleString('vi-VN'));
       setMinSpendStr(preset.cashbackPolicy.minCycleSpendToQualify.toLocaleString('vi-VN'));

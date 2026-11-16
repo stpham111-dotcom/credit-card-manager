@@ -26,6 +26,7 @@ interface SettingsTabProps {
   onToggleCardActive: (id: string) => void;
   onSeedSampleData: () => void;
   onDataImported: () => void;
+  onAddMBJCBCard?: () => void;
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -38,6 +39,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onToggleCardActive,
   onSeedSampleData,
   onDataImported,
+  onAddMBJCBCard,
 }) => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
@@ -89,6 +91,38 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               <Plus className="w-3.5 h-3.5" />
               <span>Thêm thẻ mới</span>
             </button>
+          </div>
+
+          {/* MB Bank JCB Platinum Banner */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-[#0b192c] via-[#1e3e62] to-[#000000] text-white border border-slate-700 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-8 rounded-lg bg-white/10 backdrop-blur-xs text-[10px] font-bold flex items-center justify-center border border-white/20 shrink-0 text-amber-300">
+                MB JCB
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-sm text-white">Chương trình MB Bank JCB Platinum</h4>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    MỚI CẬP NHẬT
+                  </span>
+                </div>
+                <p className="text-xs text-slate-200 mt-1 leading-relaxed">
+                  • <strong>Hoàn 10%</strong> Mua sắm trực tuyến (Shopee & TikTok Shop), tối đa <strong>500.000 đ/kỳ</strong><br />
+                  • <strong>Điều kiện</strong>: Chi tiêu trên sàn &ge; 2.000.000 đ & chi tiêu lĩnh vực khác &ge; 2.000.000 đ
+                </p>
+              </div>
+            </div>
+
+            {onAddMBJCBCard && (
+              <button
+                type="button"
+                onClick={onAddMBJCBCard}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shrink-0 cursor-pointer transition-colors shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Thêm thẻ này</span>
+              </button>
+            )}
           </div>
 
           <div className="divide-y divide-slate-100">

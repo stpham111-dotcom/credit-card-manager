@@ -2,13 +2,37 @@ import { CreditCard } from '../types';
 
 export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
   {
+    bankName: 'MB Bank',
+    cardName: 'MB JCB Platinum',
+    cardType: 'jcb',
+    creditLimit: 50000000,
+    statementDay: 18,
+    paymentDueDaysAfter: 15,
+    themeColor: 'linear-gradient(135deg, #0b192c 0%, #1e3e62 50%, #000000 100%)',
+    personalTargetSpend: 10000000,
+    cashbackPolicy: {
+      overallMaxCashback: 500000,
+      minCycleSpendToQualify: 4000000,
+      defaultPercentage: 0.3,
+      categoryRules: [
+        {
+          categoryId: 'online_shopping',
+          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
+          percentage: 10,
+          maxCashback: 500000,
+          minSpend: 2000000,
+        },
+      ],
+    },
+  },
+  {
     bankName: 'VIB',
     cardName: 'VIB Cash Back',
     cardType: 'mastercard',
     creditLimit: 50000000,
     statementDay: 20,
     paymentDueDaysAfter: 25,
-    themeColor: 'from-blue-700 via-indigo-800 to-slate-900',
+    themeColor: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #0f172a 100%)',
     cashbackPolicy: {
       overallMaxCashback: 600000,
       minCycleSpendToQualify: 5000000,
@@ -27,7 +51,7 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
     creditLimit: 80000000,
     statementDay: 25,
     paymentDueDaysAfter: 25,
-    themeColor: 'from-slate-800 via-zinc-800 to-neutral-950',
+    themeColor: 'linear-gradient(135deg, #18181b 0%, #27272a 50%, #09090b 100%)',
     cashbackPolicy: {
       overallMaxCashback: 1000000,
       minCycleSpendToQualify: 0,
@@ -45,7 +69,7 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
     creditLimit: 40000000,
     statementDay: 15,
     paymentDueDaysAfter: 15,
-    themeColor: 'from-emerald-600 via-teal-700 to-slate-900',
+    themeColor: 'linear-gradient(135deg, #059669 0%, #0f766e 50%, #111827 100%)',
     cashbackPolicy: {
       overallMaxCashback: 600000,
       minCycleSpendToQualify: 3000000,
@@ -64,7 +88,7 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
     creditLimit: 60000000,
     statementDay: 18,
     paymentDueDaysAfter: 20,
-    themeColor: 'from-rose-700 via-red-800 to-neutral-900',
+    themeColor: 'linear-gradient(135deg, #be123c 0%, #881337 50%, #1c1917 100%)',
     cashbackPolicy: {
       overallMaxCashback: 500000,
       minCycleSpendToQualify: 6000000,
@@ -82,7 +106,7 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
     creditLimit: 50000000,
     statementDay: 10,
     paymentDueDaysAfter: 15,
-    themeColor: 'from-red-600 via-rose-700 to-stone-900',
+    themeColor: 'linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #18181b 100%)',
     cashbackPolicy: {
       overallMaxCashback: 500000,
       minCycleSpendToQualify: 0,
@@ -100,7 +124,7 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
     creditLimit: 70000000,
     statementDay: 22,
     paymentDueDaysAfter: 25,
-    themeColor: 'from-blue-600 via-sky-700 to-indigo-900',
+    themeColor: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #172554 100%)',
     cashbackPolicy: {
       overallMaxCashback: 600000,
       minCycleSpendToQualify: 0,
@@ -114,6 +138,34 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
 
 export const INITIAL_SAMPLE_CARDS: CreditCard[] = [
   {
+    id: 'card-sample-mb-jcb',
+    bankName: 'MB Bank',
+    cardName: 'MB JCB Platinum',
+    cardNumberLast4: '6868',
+    cardType: 'jcb',
+    creditLimit: 50000000,
+    statementDay: 18,
+    paymentDueDaysAfter: 15,
+    themeColor: 'linear-gradient(135deg, #0b192c 0%, #1e3e62 50%, #000000 100%)',
+    personalTargetSpend: 10000000,
+    isActive: true,
+    order: 1,
+    cashbackPolicy: {
+      overallMaxCashback: 500000,
+      minCycleSpendToQualify: 4000000,
+      defaultPercentage: 0.3,
+      categoryRules: [
+        {
+          categoryId: 'online_shopping',
+          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
+          percentage: 10,
+          maxCashback: 500000,
+          minSpend: 2000000,
+        },
+      ],
+    },
+  },
+  {
     id: 'card-sample-1',
     bankName: 'VIB',
     cardName: 'VIB Cash Back',
@@ -125,7 +177,7 @@ export const INITIAL_SAMPLE_CARDS: CreditCard[] = [
     themeColor: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #0f172a 100%)',
     personalTargetSpend: 15000000,
     isActive: true,
-    order: 1,
+    order: 2,
     cashbackPolicy: {
       overallMaxCashback: 600000,
       minCycleSpendToQualify: 5000000,
@@ -149,7 +201,7 @@ export const INITIAL_SAMPLE_CARDS: CreditCard[] = [
     themeColor: 'linear-gradient(135deg, #059669 0%, #0f766e 50%, #111827 100%)',
     personalTargetSpend: 8000000,
     isActive: true,
-    order: 2,
+    order: 3,
     cashbackPolicy: {
       overallMaxCashback: 600000,
       minCycleSpendToQualify: 3000000,

@@ -29,6 +29,7 @@ import { LookupTab } from './components/LookupTab';
 import { SettingsTab } from './components/SettingsTab';
 import { TransactionModal } from './components/TransactionModal';
 import { CardModal } from './components/CardModal';
+import { POPULAR_CARD_PRESETS } from './data/defaultCards';
 
 export function App() {
   const [currentTab, setCurrentTab] = useState<ViewTab>('overview');
@@ -128,6 +129,31 @@ export function App() {
     setCards(sample.cards);
     setTransactions(sample.transactions);
     showSaveSuccess('Đã nạp lại dữ liệu mẫu vào bộ nhớ!');
+  };
+
+  const handleAddMBJCBCard = () => {
+    const mbPreset = POPULAR_CARD_PRESETS.find(p => p.cardName === 'MB JCB Platinum');
+    if (mbPreset) {
+      const newCard: CreditCard = {
+        id: `card-mb-jcb-${Date.now()}`,
+        bankName: mbPreset.bankName!,
+        cardName: mbPreset.cardName!,
+        cardNumberLast4: '6868',
+        cardType: 'jcb',
+        creditLimit: mbPreset.creditLimit || 50000000,
+        statementDay: mbPreset.statementDay || 18,
+        paymentDueDaysAfter: mbPreset.paymentDueDaysAfter || 15,
+        themeColor: mbPreset.themeColor || 'linear-gradient(135deg, #0b192c 0%, #1e3e62 50%, #000000 100%)',
+        personalTargetSpend: 10000000,
+        isActive: true,
+        order: Date.now(),
+        cashbackPolicy: mbPreset.cashbackPolicy!,
+      };
+      const updated = [newCard, ...cards];
+      setCards(updated);
+      saveCards(updated);
+      showSaveSuccess('Đã thêm thẻ MB Bank JCB Platinum thành công!');
+    }
   };
 
   const handleClearAllData = () => {
@@ -286,6 +312,7 @@ export function App() {
               setTransactions(loadTransactions());
               showSaveSuccess('Đã khôi phục dữ liệu từ file!');
             }}
+            onAddMBJCBCard={handleAddMBJCBCard}
           />
         )}
       </main>
