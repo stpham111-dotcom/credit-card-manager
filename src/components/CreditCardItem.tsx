@@ -39,6 +39,7 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
 
   // Calculate percentage of limit used
   const limitPercent = Math.min(100, Math.round(analysis.utilizationRate));
+  const availableLimit = Math.max(0, card.creditLimit - analysis.totalSpent);
   
   // Calculate percentage of cashback earned against overall cap
   const cashbackCap = card.cashbackPolicy.overallMaxCashback || 0;
@@ -80,10 +81,12 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
                 {card.cardType}
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Hạn mức: <strong className="text-slate-700">{formatVND(card.creditLimit)}</strong>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-xs">
+              <span className="text-slate-500">
+                Hạn mức khả dụng: <strong className="text-emerald-700 font-bold">{formatVND(availableLimit)}</strong> / <span className="text-slate-700 font-semibold">{formatVND(card.creditLimit)}</span>
+              </span>
               {card.cardNumberLast4 && ` • Đuôi thẻ: ${card.cardNumberLast4}`}
-            </p>
+            </div>
             {card.paymentMethod === 'auto_debit' && (
               <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[#056c4c] font-medium bg-[#edf8f2] px-2 py-0.5 rounded-md w-fit">
                 <span>🔄 Trích nợ tự động: {card.paymentRate === 'minimum' ? 'Tối thiểu' : 'Toàn bộ nợ (100%)'}</span>
@@ -136,11 +139,11 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
             <div className="text-lg font-bold text-slate-900">
               {formatVND(analysis.totalSpent)}
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+              <span>Còn lại: <strong className="text-emerald-700 font-bold">{formatVND(availableLimit)}</strong></span>
               <span className={`font-medium ${limitPercent > 70 ? 'text-rose-600' : 'text-emerald-700'}`}>
-                {limitPercent}%
+                {limitPercent}% đã dùng
               </span>
-              <span>hạn mức đã dùng</span>
             </div>
           </div>
 
@@ -226,9 +229,9 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
           {/* Credit Limit Progress */}
           <div>
             <div className="flex justify-between text-xs text-slate-600 mb-1">
-              <span>Tỷ lệ sử dụng hạn mức</span>
+              <span>Hạn mức thẻ &amp; Số tiền khả dụng</span>
               <span className="font-semibold text-slate-700">
-                {formatVND(analysis.totalSpent)} / {formatVND(card.creditLimit)} ({analysis.utilizationRate.toFixed(1)}%)
+                Khả dụng: <strong className="text-emerald-700 font-bold">{formatVND(availableLimit)}</strong> / {formatVND(card.creditLimit)} (Đã dùng {analysis.utilizationRate.toFixed(1)}%)
               </span>
             </div>
             <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">

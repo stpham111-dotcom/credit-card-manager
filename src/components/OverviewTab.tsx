@@ -4,19 +4,21 @@ import {
   TrendingUp, 
   Gift, 
   Eye, 
+  EyeOff,
   Check, 
   ChevronDown, 
   Plus, 
-  Sparkles,
-  ReceiptText,
-  Trash2,
-  Edit3,
-  ArrowRight
+  Sparkles, 
+  ReceiptText, 
+  Trash2, 
+  Edit3, 
+  ArrowRight 
 } from 'lucide-react';
 import { CreditCard, Transaction, DisplayOptions } from '../types';
 import { analyzeCardCycle, CardCycleAnalysis } from '../utils/cashbackCalculator';
 import { formatVND, formatDateVN } from '../utils/formatters';
 import { CreditCardItem } from './CreditCardItem';
+import { MBJCBPolicyModal } from './MBJCBPolicyModal';
 
 interface OverviewTabProps {
   cards: CreditCard[];
@@ -68,6 +70,29 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const totalLimit = cardAnalyses.reduce((sum, item) => sum + item.creditLimit, 0);
   const totalSpentCycle = cardAnalyses.reduce((sum, item) => sum + item.totalSpent, 0);
   const totalEstimatedCashback = cardAnalyses.reduce((sum, item) => sum + item.totalCappedCashback, 0);
+  const totalAvailableLimit = Math.max(0, totalLimit - totalSpentCycle);
+
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [isHideBalances, setIsHideBalances] = useState(() => {
+    try {
+      return localStorage.getItem('hoantien_hide_balances') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleHideBalances = () => {
+    const next = !isHideBalances;
+    setIsHideBalances(next);
+    try {
+      localStorage.setItem('hoantien_hide_balances', String(next));
+    } catch {}
+  };
+
+  const maskMoney = (amount: number) => {
+    if (isHideBalances) return '•••••• ₫';
+    return formatVND(amount);
+  };
 
   // Sorting
   const sortedAnalyses = useMemo(() => {
@@ -97,79 +122,125 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 4 Metric Cards Grid - Exact replica of the screenshot */}
+      {/* 4 Interactive Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Số thẻ đang dùng */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-700">Số thẻ đang dùng</span>
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
+            <button
+              onClick={onOpenAddCard}
+              className="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-600 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
+              title="Bấm để thêm thẻ tín dụng mới"
+            >
               <CreditCardIcon className="w-4 h-4" />
-            </div>
+            </button>
           </div>
           <div className="my-3">
             <div className="text-3xl font-extrabold text-slate-900 tracking-tight">
               {totalCardsCount}
             </div>
           </div>
-          <div className="text-xs text-slate-500">
-            {totalCardsCount === 0 ? 'Chưa có dữ liệu' : `${totalCardsCount} thẻ đang hoạt động`}
+          <div className="text-xs text-slate-500 flex items-center justify-between">
+            <span>{totalCardsCount === 0 ? 'Chưa có thẻ nào' : `${totalCardsCount} thẻ đang dùng`}</span>
+            <button
+              onClick={onOpenAddCard}
+              className="text-[#056c4c] hover:underline font-semibold text-[11px] cursor-pointer"
+            >
+              + Thêm thẻ
+            </button>
           </div>
         </div>
 
-        {/* Metric 2: Tổng hạn mức */}
+        {/* Metric 2: Hạn mức khả dụng & Tổng hạn mức (Active Eye Button) */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-700">Tổng hạn mức</span>
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Eye className="w-4 h-4" />
-            </div>
+            <span className="text-sm font-medium text-slate-700">Hạn mức khả dụng</span>
+            <button
+              onClick={toggleHideBalances}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors shadow-2xs ${
+                isHideBalances 
+                  ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' 
+                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'
+              }`}
+              title={isHideBalances ? 'Bấm để hiển thị số tiền' : 'Bấm để ẩn số tiền (Bảo mật số dư)'}
+            >
+              {isHideBalances ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
           <div className="my-3">
             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
-              {formatVND(totalLimit)}
-            </div>
-          </div>
-          <div className="text-xs text-slate-500">
-            {totalLimit === 0 
-              ? 'Chưa khai hạn mức' 
-              : `Đã dùng ${((totalSpentCycle / totalLimit) * 100).toFixed(1)}% hạn mức`}
-          </div>
-        </div>
-
-        {/* Metric 3: Chi tiêu kỳ này */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-700">Chi tiêu kỳ này</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="my-3">
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
-              {formatVND(totalSpentCycle)}
+              {maskMoney(totalAvailableLimit)}
             </div>
           </div>
           <div className="text-xs text-slate-500 truncate">
-            Theo kỳ sao kê hiện tại của từng thẻ
+            {totalLimit === 0 ? (
+              'Chưa khai hạn mức'
+            ) : (
+              <span>
+                Khả dụng: <strong className="text-emerald-700 font-bold">{maskMoney(totalAvailableLimit)}</strong> / {maskMoney(totalLimit)}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Metric 4: Cashback dự kiến (Highlighted in Green) */}
+        {/* Metric 3: Chi tiêu kỳ này (Active TrendingUp Button -> View Transactions) */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-700">Chi tiêu kỳ này</span>
+            <button
+              onClick={onViewAllTransactions}
+              className="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
+              title="Bấm để xem lịch sử & quản lý giao dịch"
+            >
+              <TrendingUp className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="my-3">
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate">
+              {maskMoney(totalSpentCycle)}
+            </div>
+          </div>
+          <div className="text-xs text-slate-500 flex items-center justify-between">
+            <span className="truncate">
+              Đã dùng {totalLimit > 0 ? ((totalSpentCycle / totalLimit) * 100).toFixed(1) : 0}% hạn mức
+            </span>
+            {onViewAllTransactions && (
+              <button
+                onClick={onViewAllTransactions}
+                className="text-amber-700 hover:underline font-semibold text-[11px] cursor-pointer shrink-0"
+              >
+                Xem chi tiết →
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Metric 4: Cashback dự kiến (Active Gift Button -> View Policy Modal) */}
         <div className="bg-[#f0fbf5] rounded-2xl p-5 border border-[#c3e9d2] shadow-2xs flex flex-col justify-between relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-[#056c4c]">Cashback dự kiến</span>
-            <div className="w-8 h-8 rounded-lg bg-[#ddf4e7] text-[#056c4c] flex items-center justify-center">
+            <button
+              onClick={() => setIsPolicyModalOpen(true)}
+              className="w-8 h-8 rounded-lg bg-[#ddf4e7] hover:bg-[#cbeedb] text-[#056c4c] flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
+              title="Bấm để xem chi tiết thể lệ hoàn tiền MB JCB Platinum"
+            >
               <Gift className="w-4 h-4" />
-            </div>
+            </button>
           </div>
           <div className="my-3">
             <div className="text-2xl sm:text-3xl font-extrabold text-[#056c4c] tracking-tight truncate">
-              {formatVND(totalEstimatedCashback)}
+              {maskMoney(totalEstimatedCashback)}
             </div>
           </div>
-          <div className="text-xs text-[#056c4c]/80 truncate">
-            Theo kỳ sao kê hiện tại của từng thẻ
+          <div className="text-xs text-[#056c4c]/80 flex items-center justify-between">
+            <span className="truncate">Theo thể lệ hoàn tiền</span>
+            <button
+              onClick={() => setIsPolicyModalOpen(true)}
+              className="text-[#056c4c] hover:underline font-bold text-[11px] cursor-pointer shrink-0"
+            >
+              Xem thể lệ →
+            </button>
           </div>
         </div>
       </div>
@@ -433,6 +504,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* MB Bank JCB Platinum Policy Modal */}
+      <MBJCBPolicyModal
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+      />
     </div>
   );
 };
