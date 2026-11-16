@@ -19,6 +19,7 @@ import { CardCycleAnalysis } from '../utils/cashbackCalculator';
 import { formatVND, formatDateVN } from '../utils/formatters';
 import { MBJCBTracker } from './MBJCBTracker';
 import { MBJCBPolicyModal } from './MBJCBPolicyModal';
+import { loadInstallments } from '../utils/storage';
 
 interface CreditCardItemProps {
   analysis: CardCycleAnalysis;
@@ -37,9 +38,16 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const { card } = analysis;
 
-  // Calculate percentage of limit used
-  const limitPercent = Math.min(100, Math.round(analysis.utilizationRate));
-  const availableLimit = Math.max(0, card.creditLimit - analysis.totalSpent);
+  // Load active installment plans for this card (e.g. Uniqlo 6-month plan)
+  const installmentPlans = loadInstallments();
+  const cardInstallmentDebt = installmentPlans
+    .filter(p => p.cardId === card.id && p.status === 'active')
+    .reduce((sum, p) => sum + p.remainingDebt, 0);
+
+  // Hạn mức khả dụng chuẩn ngân hàng: Hạn mức thẻ - Chi tiêu kỳ này - Dư nợ gốc trả góp đang khóa hạn mức
+  const availableLimit = Math.max(0, card.creditLimit - analysis.totalSpent - cardInstallmentDebt);
+  const totalBlocked = analysis.totalSpent + cardInstallmentDebt;
+  const limitPercent = Math.min(100, Math.round((totalBlocked / card.creditLimit) * 100));
   
   // Calculate percentage of cashback earned against overall cap
   const cashbackCap = card.cashbackPolicy.overallMaxCashback || 0;
@@ -85,6 +93,11 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
               <span className="text-slate-500">
                 Hạn mức khả dụng: <strong className="text-emerald-700 font-bold">{formatVND(availableLimit)}</strong> / <span className="text-slate-700 font-semibold">{formatVND(card.creditLimit)}</span>
               </span>
+              {cardInstallmentDebt > 0 && (
+                <span className="text-indigo-700 font-medium text-[11px] bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+                  Trả góp Uniqlo đang khóa: {formatVND(cardInstallmentDebt)}
+                </span>
+              )}
               {card.cardNumberLast4 && ` • Đuôi thẻ: ${card.cardNumberLast4}`}
             </div>
             {card.paymentMethod === 'auto_debit' && (
@@ -231,7 +244,7 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
             <div className="flex justify-between text-xs text-slate-600 mb-1">
               <span>Hạn mức thẻ &amp; Số tiền khả dụng</span>
               <span className="font-semibold text-slate-700">
-                Khả dụng: <strong className="text-emerald-700 font-bold">{formatVND(availableLimit)}</strong> / {formatVND(card.creditLimit)} (Đã dùng {analysis.utilizationRate.toFixed(1)}%)
+                Khả dụng: <strong className="text-emerald-700 font-bold">{formatVND(availableLimit)}</strong> / {formatVND(card.creditLimit)} {cardInstallmentDebt > 0 ? `(Chi tiêu: ${formatVND(analysis.totalSpent)} • Trả góp giữ: ${formatVND(cardInstallmentDebt)})` : `(Đã dùng ${limitPercent}%)`}
               </span>
             </div>
             <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">

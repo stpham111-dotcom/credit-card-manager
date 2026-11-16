@@ -70,6 +70,37 @@ export interface SpendingCategory {
   description?: string;
 }
 
+export interface InstallmentScheduleItem {
+  period: number; // 1 to 6
+  statementDate: string; // ISO date 'YYYY-MM-DD' (e.g. 2026-11-08)
+  dueDate: string; // ISO date 'YYYY-MM-DD' (e.g. 2026-11-23)
+  principal: number; // 196,167 VND
+  fee: number; // 56,496 VND in period 1, 0 VND in others
+  totalDue: number; // 252,663 VND in period 1, 196,167 VND in others
+  remainingAfterPeriod: number; // e.g. 980,833 VND after period 1
+  status: 'billed' | 'upcoming' | 'paid';
+}
+
+export interface InstallmentPlan {
+  id: string;
+  cardId: string;
+  merchantName: string;
+  planCode: string; // e.g. '53854385050'
+  originalTransactionId?: string;
+  totalAmount: number; // 1,177,000 VND
+  tenorMonths: number; // 6
+  monthlyPrincipal: number; // 196,167 VND
+  remainingDebt: number; // 980,833 VND
+  paidPeriods: number; // 1
+  interestRate: number; // 0%
+  conversionFee: number; // 56,496 VND
+  registrationDate: string; // '2026-11-04'
+  startDate: string; // '2026-11-09'
+  endDate: string; // '2027-04-23'
+  status: 'active' | 'completed';
+  schedule: InstallmentScheduleItem[];
+}
+
 export type ViewTab = 
   | 'overview' 
   | 'transactions'

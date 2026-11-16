@@ -1,7 +1,8 @@
-import { CreditCard, Transaction, SpendingCategory, DisplayOptions } from '../types';
+import { CreditCard, Transaction, SpendingCategory, DisplayOptions, InstallmentPlan } from '../types';
 import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
 import { INITIAL_SAMPLE_CARDS } from '../data/defaultCards';
 import { REAL_MB_TRANSACTIONS } from '../data/realTransactions';
+import { DEFAULT_INSTALLMENT_PLANS } from '../data/defaultInstallments';
 
 const INITIALIZED_FLAG = 'hoantien_initialized_v2';
 const CARDS_KEY = 'hoantien_cards_v2';
@@ -9,6 +10,7 @@ const TRANSACTIONS_KEY = 'hoantien_transactions_v2';
 const CATEGORIES_KEY = 'hoantien_categories_v2';
 const DISPLAY_OPTIONS_KEY = 'hoantien_display_options_v2';
 const PAID_STATUS_KEY = 'hoantien_paid_status_v2';
+const INSTALLMENTS_KEY = 'hoantien_installments_v2';
 
 export const DEFAULT_DISPLAY_OPTIONS: DisplayOptions = {
   showPersonalTarget: true,
@@ -237,10 +239,38 @@ export function seedSampleData(): { cards: CreditCard[]; transactions: Transacti
   return { cards, transactions: sampleTransactions };
 }
 
+export function loadInstallments(): InstallmentPlan[] {
+  try {
+    const raw = localStorage.getItem(INSTALLMENTS_KEY);
+    if (raw === null) {
+      saveInstallments(DEFAULT_INSTALLMENT_PLANS);
+      return DEFAULT_INSTALLMENT_PLANS;
+    }
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length === 0) {
+      saveInstallments(DEFAULT_INSTALLMENT_PLANS);
+      return DEFAULT_INSTALLMENT_PLANS;
+    }
+    return parsed;
+  } catch (e) {
+    console.error('Error loading installments from storage', e);
+    return DEFAULT_INSTALLMENT_PLANS;
+  }
+}
+
+export function saveInstallments(plans: InstallmentPlan[]) {
+  try {
+    localStorage.setItem(INSTALLMENTS_KEY, JSON.stringify(plans));
+  } catch (e) {
+    console.error('Error saving installments to storage', e);
+  }
+}
+
 export function clearAllUserData() {
   saveCards([]);
   saveTransactions([]);
   savePaidStatus({});
+  saveInstallments([]);
   markAppInitialized();
 }
 

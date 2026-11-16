@@ -91,6 +91,48 @@ export const REAL_MB_TRANSACTIONS: Transaction[] = [
     cashbackRate: 10,
   },
 
+  // 08/11/2026 - Chốt sao kê kỳ 1 trả góp Uniqlo (Ảnh Sao kê MB)
+  {
+    id: 'mb-real-uniqlo-instalment-p1',
+    cardId: 'card-sample-mb-jcb',
+    amount: 196167,
+    date: '2026-11-08',
+    categoryId: 'other',
+    note: 'Instalment Retail Principal Due - Dư nợ gốc trả góp UNIQLO (Kỳ 1/6)',
+    mcc: '5691',
+    type: 'expense',
+    cashbackEarned: 0,
+    cashbackRate: 0,
+    isExcludedFromCashback: true,
+  },
+
+  // 04/11/2026 - Hạch toán đăng ký trả góp Uniqlo (Ảnh Sao kê MB)
+  {
+    id: 'mb-real-uniqlo-instalment-offset',
+    cardId: 'card-sample-mb-jcb',
+    amount: 1177000,
+    date: '2026-11-04',
+    categoryId: 'other',
+    note: 'Instalment Retail Creation - Chuyển đổi trả góp UNIQLO (Gạch nợ chi tiêu 1 lần)',
+    mcc: '5691',
+    type: 'income',
+    cashbackEarned: 0,
+    cashbackRate: 0,
+  },
+  {
+    id: 'mb-real-uniqlo-instalment-fee',
+    cardId: 'card-sample-mb-jcb',
+    amount: 56496,
+    date: '2026-11-04',
+    categoryId: 'other',
+    note: 'Instalment Creation Fee - Phí chuyển đổi trả góp UNIQLO 6 tháng (Kỳ đầu)',
+    mcc: '5691',
+    type: 'expense',
+    cashbackEarned: 0,
+    cashbackRate: 0,
+    isExcludedFromCashback: true,
+  },
+
   // 02/11/2026 (Ảnh 5)
   {
     id: 'mb-real-8',

@@ -19,6 +19,7 @@ import { analyzeCardCycle, CardCycleAnalysis } from '../utils/cashbackCalculator
 import { formatVND, formatDateVN } from '../utils/formatters';
 import { CreditCardItem } from './CreditCardItem';
 import { MBJCBPolicyModal } from './MBJCBPolicyModal';
+import { loadInstallments } from '../utils/storage';
 
 interface OverviewTabProps {
   cards: CreditCard[];
@@ -70,7 +71,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const totalLimit = cardAnalyses.reduce((sum, item) => sum + item.creditLimit, 0);
   const totalSpentCycle = cardAnalyses.reduce((sum, item) => sum + item.totalSpent, 0);
   const totalEstimatedCashback = cardAnalyses.reduce((sum, item) => sum + item.totalCappedCashback, 0);
-  const totalAvailableLimit = Math.max(0, totalLimit - totalSpentCycle);
+
+  const installmentPlans = useMemo(() => loadInstallments(), []);
+  const activeInstallmentDebt = useMemo(() => {
+    return installmentPlans
+      .filter(p => p.status === 'active')
+      .reduce((sum, p) => sum + p.remainingDebt, 0);
+  }, [installmentPlans]);
+
+  // Hạn mức khả dụng chuẩn ngân hàng: Tổng hạn mức - Chi tiêu kỳ này - Dư nợ gốc trả góp đang khóa hạn mức
+  const totalAvailableLimit = Math.max(0, totalLimit - totalSpentCycle - activeInstallmentDebt);
 
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const [isHideBalances, setIsHideBalances] = useState(() => {
@@ -177,8 +187,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {totalLimit === 0 ? (
               'Chưa khai hạn mức'
             ) : (
-              <span>
-                Khả dụng: <strong className="text-emerald-700 font-bold">{maskMoney(totalAvailableLimit)}</strong> / {maskMoney(totalLimit)}
+              <span className="flex items-center gap-1.5 flex-wrap">
+                <span>Khả dụng: <strong className="text-emerald-700 font-bold">{maskMoney(totalAvailableLimit)}</strong> / {maskMoney(totalLimit)}</span>
+                {activeInstallmentDebt > 0 && (
+                  <span className="text-indigo-600 font-medium text-[11px]">
+                    (Trả góp giữ: {maskMoney(activeInstallmentDebt)})
+                  </span>
+                )}
               </span>
             )}
           </div>
