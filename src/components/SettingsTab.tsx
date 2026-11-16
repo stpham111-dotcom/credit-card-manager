@@ -12,9 +12,10 @@ import {
   Tag,
   Coins,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Sliders
 } from 'lucide-react';
-import { CreditCard, SpendingCategory, ViewTab } from '../types';
+import { CreditCard, SpendingCategory, ViewTab, DisplayOptions } from '../types';
 import { exportBackupJSON, importBackupJSON } from '../utils/storage';
 import { formatVND } from '../utils/formatters';
 import { MBJCBPolicyModal } from './MBJCBPolicyModal';
@@ -23,6 +24,8 @@ interface SettingsTabProps {
   currentSubTab: ViewTab;
   cards: CreditCard[];
   categories: SpendingCategory[];
+  displayOptions?: DisplayOptions;
+  onUpdateDisplayOptions?: (options: DisplayOptions) => void;
   onOpenAddCard: () => void;
   onEditCard: (card: CreditCard) => void;
   onDeleteCard: (id: string) => void;
@@ -37,6 +40,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   currentSubTab,
   cards,
   categories,
+  displayOptions,
+  onUpdateDisplayOptions,
   onOpenAddCard,
   onEditCard,
   onDeleteCard,
@@ -306,7 +311,89 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
       )}
 
-      {/* 5. Data Backup & Local Storage */}
+      {/* 5. Toggle Cashbook / Display Options */}
+      {currentSubTab === 'toggle-cashbook' && (
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-4">
+          <div className="flex items-center gap-3">
+            <Sliders className="w-5 h-5 text-[#056c4c]" />
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Bật / Tắt hiển thị tính năng &amp; Sổ thu chi</h3>
+              <p className="text-xs text-slate-500">Tùy biến các khối thông tin bạn muốn xem trên giao diện ứng dụng</p>
+            </div>
+          </div>
+
+          {displayOptions && onUpdateDisplayOptions && (
+            <div className="space-y-3 max-w-xl">
+              <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 cursor-pointer hover:bg-slate-50">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Hiển thị tiến độ &amp; mục tiêu cá nhân</span>
+                  <span className="text-[11px] text-slate-400">Xem tiến độ chi tiêu theo hạn mức và mục tiêu tháng</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={displayOptions.showPersonalTarget}
+                  onChange={(e) => onUpdateDisplayOptions({ ...displayOptions, showPersonalTarget: e.target.checked })}
+                  className="rounded text-[#056c4c] focus:ring-[#056c4c] w-4 h-4 cursor-pointer"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 cursor-pointer hover:bg-slate-50">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Hiển thị số tiền hoàn (cashback) ước tính</span>
+                  <span className="text-[11px] text-slate-400">Tự động tính tiền hoàn theo từng danh mục</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={displayOptions.showEstimatedCashback}
+                  onChange={(e) => onUpdateDisplayOptions({ ...displayOptions, showEstimatedCashback: e.target.checked })}
+                  className="rounded text-[#056c4c] focus:ring-[#056c4c] w-4 h-4 cursor-pointer"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 cursor-pointer hover:bg-slate-50">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Hiển thị danh mục chi tiêu hoàn tiền</span>
+                  <span className="text-[11px] text-slate-400">Xem phân tích % hoàn theo từng nhóm ngành hàng</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={displayOptions.showCategoryCashback}
+                  onChange={(e) => onUpdateDisplayOptions({ ...displayOptions, showCategoryCashback: e.target.checked })}
+                  className="rounded text-[#056c4c] focus:ring-[#056c4c] w-4 h-4 cursor-pointer"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 cursor-pointer hover:bg-slate-50">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Hiển thị điều khoản và chính sách thẻ</span>
+                  <span className="text-[11px] text-slate-400">Hiển thị các quy định hoàn tiền và trần chiết khấu</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={displayOptions.showCardTerms}
+                  onChange={(e) => onUpdateDisplayOptions({ ...displayOptions, showCardTerms: e.target.checked })}
+                  className="rounded text-[#056c4c] focus:ring-[#056c4c] w-4 h-4 cursor-pointer"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 cursor-pointer hover:bg-slate-50">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">Hiển thị sao kê kỳ trước</span>
+                  <span className="text-[11px] text-slate-400">Xem lại dữ liệu chu kỳ trước để so sánh</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={displayOptions.showPreviousStatement}
+                  onChange={(e) => onUpdateDisplayOptions({ ...displayOptions, showPreviousStatement: e.target.checked })}
+                  className="rounded text-[#056c4c] focus:ring-[#056c4c] w-4 h-4 cursor-pointer"
+                />
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 6. Data Backup & Local Storage */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs space-y-4">
         <div>
           <h3 className="text-base font-bold text-slate-900">Sao lưu, Khôi phục & Bảo mật dữ liệu</h3>

@@ -68,21 +68,58 @@ export function saveCards(cards: CreditCard[]) {
 export function loadTransactions(): Transaction[] {
   try {
     const raw = localStorage.getItem(TRANSACTIONS_KEY);
+    const cards = loadCards();
+    const mbCard = cards.find(c => c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb')) || cards[0];
+    const targetCardId = mbCard ? mbCard.id : 'card-sample-mb-jcb';
+
+    const getRealWithCardId = () => REAL_MB_TRANSACTIONS.map(t => ({ ...t, cardId: targetCardId }));
+
     if (raw === null) {
-      saveTransactions(REAL_MB_TRANSACTIONS);
-      return REAL_MB_TRANSACTIONS;
+      const initial = getRealWithCardId();
+      saveTransactions(initial);
+      return initial;
     }
+
     const parsed = JSON.parse(raw);
-    // If the storage still has the old mock transactions without MCC, auto-migrate to the user's real transactions from screenshots
+    const userExplicitlyCleared = localStorage.getItem('hoantien_user_cleared_all_tx') === 'true';
+
+    // If storage is empty array or has old mock transactions without MCC (and user hasn't explicitly clicked Clear All)
     const hasReal = Array.isArray(parsed) && parsed.some((t: Transaction) => t.id.startsWith('mb-real-') || t.mcc !== undefined);
-    if (!hasReal && Array.isArray(parsed) && parsed.length > 0) {
-      saveTransactions(REAL_MB_TRANSACTIONS);
-      return REAL_MB_TRANSACTIONS;
+
+    if (!userExplicitlyCleared && (!hasReal || (Array.isArray(parsed) && parsed.length === 0))) {
+      const initial = getRealWithCardId();
+      saveTransactions(initial);
+      return initial;
     }
-    return parsed;
+
+    if (Array.isArray(parsed)) {
+      // Ensure all transactions have valid cardId mapping to user's card if user has only 1 card
+      if (cards.length === 1) {
+        return parsed.map((t: Transaction) => ({ ...t, cardId: targetCardId }));
+      }
+      return parsed;
+    }
+    return [];
   } catch (e) {
     console.error('Error loading transactions from storage', e);
-    return [];
+    return REAL_MB_TRANSACTIONS;
+  }
+}
+
+export function resetToRealMBTransactions(targetCardId?: string): Transaction[] {
+  try {
+    localStorage.removeItem('hoantien_user_cleared_all_tx');
+    const cards = loadCards();
+    const mbCard = targetCardId 
+      ? cards.find(c => c.id === targetCardId) 
+      : (cards.find(c => c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb')) || cards[0]);
+    const cardId = mbCard ? mbCard.id : 'card-sample-mb-jcb';
+    const txs = REAL_MB_TRANSACTIONS.map(t => ({ ...t, cardId }));
+    saveTransactions(txs);
+    return txs;
+  } catch (e) {
+    console.error('Error resetting to real MB transactions', e);
+    return REAL_MB_TRANSACTIONS;
   }
 }
 

@@ -17,6 +17,7 @@ import {
   saveDisplayOptions, 
   seedSampleData,
   seedMBJCBSampleFlow,
+  resetToRealMBTransactions,
   isAppInitialized,
   markAppInitialized,
   clearAllUserData
@@ -33,9 +34,55 @@ import { TransactionModal } from './components/TransactionModal';
 import { CardModal } from './components/CardModal';
 import { POPULAR_CARD_PRESETS } from './data/defaultCards';
 
+const TAB_ROUTES: Record<ViewTab, string> = {
+  overview: '#/',
+  transactions: '#/transactions',
+  lookup: '#/transactions',
+  statements: '#/statements',
+  reports: '#/reports',
+  recommender: '#/recommender',
+  'manage-cards': '#/settings/cards',
+  currency: '#/settings/currency',
+  'cashback-policy': '#/settings/cashback',
+  categories: '#/settings/categories',
+  'toggle-cashbook': '#/settings/options',
+};
+
+function getTabFromHash(): ViewTab {
+  if (typeof window === 'undefined') return 'overview';
+  const hash = window.location.hash.toLowerCase();
+  if (!hash || hash === '#/' || hash === '#/overview') return 'overview';
+  if (hash.includes('trans') || hash.includes('giao-dich') || hash.includes('lookup')) return 'transactions';
+  if (hash.includes('statement') || hash.includes('sao-ke')) return 'statements';
+  if (hash.includes('report') || hash.includes('bao-cao')) return 'reports';
+  if (hash.includes('recom') || hash.includes('lua-chon')) return 'recommender';
+  if (hash.includes('cards') || hash.includes('the')) return 'manage-cards';
+  if (hash.includes('currency') || hash.includes('tien')) return 'currency';
+  if (hash.includes('cashback') || hash.includes('hoan-tien')) return 'cashback-policy';
+  if (hash.includes('cat') || hash.includes('danh-muc')) return 'categories';
+  if (hash.includes('option') || hash.includes('cashbook') || hash.includes('thu-chi')) return 'toggle-cashbook';
+  return 'overview';
+}
+
 export function App() {
-  const [currentTab, setCurrentTab] = useState<ViewTab>('overview');
+  const [currentTab, setCurrentTab] = useState<ViewTab>(getTabFromHash);
   
+  const handleSelectTab = (tab: ViewTab) => {
+    setCurrentTab(tab);
+    const targetHash = TAB_ROUTES[tab] || '#/';
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentTab(getTabFromHash());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Synchronously load data from localStorage on first render to prevent any race conditions or flicker
   const [cards, setCards] = useState<CreditCard[]>(() => {
     try {
@@ -51,12 +98,13 @@ export function App() {
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     try {
-      if (!isAppInitialized()) {
-        return seedSampleData().transactions;
+      const loaded = loadTransactions();
+      if (!loaded || loaded.length === 0) {
+        return resetToRealMBTransactions();
       }
-      return loadTransactions();
+      return loaded;
     } catch {
-      return [];
+      return resetToRealMBTransactions();
     }
   });
 
@@ -245,9 +293,17 @@ export function App() {
   };
 
   const handleClearAllTransactions = () => {
+    localStorage.setItem('hoantien_user_cleared_all_tx', 'true');
     setTransactions([]);
     saveTransactions([]);
     showSaveSuccess('Đã xóa toàn bộ lịch sử giao dịch!');
+  };
+
+  const handleLoadRealMBTransactions = () => {
+    localStorage.removeItem('hoantien_user_cleared_all_tx');
+    const realTxs = resetToRealMBTransactions();
+    setTransactions(realTxs);
+    showSaveSuccess('Đã nạp 38 giao dịch sao kê thực tế từ app MB Bank!');
   };
 
   const handleOpenEditCard = (card: CreditCard) => {
@@ -273,7 +329,7 @@ export function App() {
       {/* Sidebar Navigation */}
       <Sidebar
         currentTab={currentTab}
-        onSelectTab={setCurrentTab}
+        onSelectTab={handleSelectTab}
         onOpenNewTransaction={() => handleOpenAddTxWithCard()}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
@@ -307,7 +363,7 @@ export function App() {
             onSeedSampleData={handleSeedSampleData}
             onEditTransaction={handleOpenEditTransaction}
             onDeleteTransaction={handleDeleteTransaction}
-            onViewAllTransactions={() => setCurrentTab('transactions')}
+            onViewAllTransactions={() => handleSelectTab('transactions')}
           />
         )}
 
@@ -321,6 +377,7 @@ export function App() {
             onEditTransaction={handleOpenEditTransaction}
             onClearAllTransactions={handleClearAllTransactions}
             onExportCSV={handleExportCSVReport}
+            onLoadRealMBTransactions={handleLoadRealMBTransactions}
           />
         )}
 
@@ -358,6 +415,8 @@ export function App() {
             currentSubTab={currentTab}
             cards={cards}
             categories={categories}
+            displayOptions={displayOptions}
+            onUpdateDisplayOptions={handleUpdateDisplayOptions}
             onOpenAddCard={() => {
               setEditingCard(null);
               setIsCardModalOpen(true);

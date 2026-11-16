@@ -33,22 +33,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const mainNavItems = [
-    { id: 'overview' as ViewTab, label: 'Tổng quan', icon: LayoutDashboard },
-    { id: 'transactions' as ViewTab, label: 'Lịch sử giao dịch', icon: ReceiptText },
-    { id: 'statements' as ViewTab, label: 'Sao kê & Hạn trả', icon: FileText },
-    { id: 'reports' as ViewTab, label: 'Báo cáo', icon: BarChart3 },
-    { id: 'recommender' as ViewTab, label: 'Lựa chọn thẻ', icon: Star },
+    { id: 'overview' as ViewTab, label: 'Tổng quan', href: '#/', icon: LayoutDashboard },
+    { id: 'transactions' as ViewTab, label: 'Lịch sử giao dịch', href: '#/transactions', icon: ReceiptText },
+    { id: 'statements' as ViewTab, label: 'Sao kê & Hạn trả', href: '#/statements', icon: FileText },
+    { id: 'reports' as ViewTab, label: 'Báo cáo', href: '#/reports', icon: BarChart3 },
+    { id: 'recommender' as ViewTab, label: 'Lựa chọn thẻ', href: '#/recommender', icon: Star },
   ];
 
   const settingsNavItems = [
-    { id: 'manage-cards' as ViewTab, label: 'Quản lý thẻ', icon: CreditCard },
-    { id: 'currency' as ViewTab, label: 'Đơn vị tiền', icon: Coins },
-    { id: 'cashback-policy' as ViewTab, label: 'Chính sách hoàn tiền', icon: BadgePercent },
-    { id: 'categories' as ViewTab, label: 'Danh mục', icon: Tags },
-    { id: 'toggle-cashbook' as ViewTab, label: 'Bật / Tắt Sổ thu chi', icon: Sliders },
+    { id: 'manage-cards' as ViewTab, label: 'Quản lý thẻ', href: '#/settings/cards', icon: CreditCard },
+    { id: 'currency' as ViewTab, label: 'Đơn vị tiền', href: '#/settings/currency', icon: Coins },
+    { id: 'cashback-policy' as ViewTab, label: 'Chính sách hoàn tiền', href: '#/settings/cashback', icon: BadgePercent },
+    { id: 'categories' as ViewTab, label: 'Danh mục', href: '#/settings/categories', icon: Tags },
+    { id: 'toggle-cashbook' as ViewTab, label: 'Bật / Tắt Sổ thu chi', href: '#/settings/options', icon: Sliders },
   ];
 
-  const handleNavClick = (tab: ViewTab) => {
+  const handleNavClick = (tab: ViewTab, href: string) => {
+    window.location.hash = href;
     onSelectTab(tab);
     if (isMobileOpen) {
       onCloseMobile();
@@ -102,18 +103,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const Icon = item.icon;
             const isActive = currentTab === item.id;
             return (
-              <button
+              <a
                 key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer ${
+                href={item.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(item.id, item.href);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors text-left cursor-pointer no-underline ${
                   isActive
                     ? 'bg-[#edf8f2] text-[#056c4c]'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#056c4c]' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#056c4c]' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
-              </button>
+              </a>
             );
           })}
         </nav>
@@ -131,18 +136,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const Icon = item.icon;
             const isActive = currentTab === item.id;
             return (
-              <button
+              <a
                 key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-[13px] font-normal transition-colors text-left cursor-pointer ${
+                href={item.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(item.id, item.href);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-lg text-[13px] font-normal transition-colors text-left cursor-pointer no-underline ${
                   isActive
                     ? 'bg-[#edf8f2] text-[#056c4c] font-medium'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#056c4c]' : 'text-slate-400'}`} />
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#056c4c]' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
-              </button>
+              </a>
             );
           })}
         </div>

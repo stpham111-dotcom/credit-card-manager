@@ -11,7 +11,9 @@ import {
   TrendingUp, 
   CreditCard as CardIcon,
   AlertCircle,
-  Tag
+  Tag,
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 import { CreditCard, SpendingCategory, Transaction } from '../types';
 import { formatVND, formatDateVN } from '../utils/formatters';
@@ -25,6 +27,7 @@ interface LookupTabProps {
   onEditTransaction?: (tx: Transaction) => void;
   onClearAllTransactions?: () => void;
   onExportCSV?: () => void;
+  onLoadRealMBTransactions?: () => void;
 }
 
 type SortField = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc' | 'cashback-desc';
@@ -38,6 +41,7 @@ export const LookupTab: React.FC<LookupTabProps> = ({
   onEditTransaction,
   onClearAllTransactions,
   onExportCSV,
+  onLoadRealMBTransactions,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCardId, setSelectedCardId] = useState('all');
@@ -127,6 +131,17 @@ export const LookupTab: React.FC<LookupTabProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {onLoadRealMBTransactions && (
+            <button
+              onClick={onLoadRealMBTransactions}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
+              title="Khôi phục hoặc nạp 38 giao dịch sao kê thực tế từ app MB Bank"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Nạp 38 giao dịch MB Bank</span>
+            </button>
+          )}
+
           {onExportCSV && transactions.length > 0 && (
             <button
               onClick={onExportCSV}
@@ -260,13 +275,24 @@ export const LookupTab: React.FC<LookupTabProps> = ({
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
               Thử xóa bộ lọc tìm kiếm hoặc bấm nút "Thêm giao dịch mới" để bắt đầu ghi chép.
             </p>
-            <button
-              onClick={onOpenAddTransaction}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#056c4c] text-white text-xs font-semibold shadow-xs cursor-pointer hover:bg-[#04593e] transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Nhập giao dịch ngay</span>
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              {onLoadRealMBTransactions && (
+                <button
+                  onClick={onLoadRealMBTransactions}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold shadow-xs cursor-pointer transition-colors"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>Nạp 38 giao dịch từ ảnh sao kê MB Bank (kèm MCC)</span>
+                </button>
+              )}
+              <button
+                onClick={onOpenAddTransaction}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#056c4c] text-white text-xs font-semibold shadow-xs cursor-pointer hover:bg-[#04593e] transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Nhập giao dịch thủ công</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
