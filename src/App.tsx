@@ -18,6 +18,7 @@ import {
   seedSampleData,
   seedMBJCBSampleFlow,
   isAppInitialized,
+  markAppInitialized,
   clearAllUserData
 } from './utils/storage';
 import { Sidebar } from './components/Sidebar';
@@ -34,10 +35,40 @@ import { POPULAR_CARD_PRESETS } from './data/defaultCards';
 
 export function App() {
   const [currentTab, setCurrentTab] = useState<ViewTab>('overview');
-  const [cards, setCards] = useState<CreditCard[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [categories, setCategories] = useState<SpendingCategory[]>([]);
-  const [displayOptions, setDisplayOptions] = useState<DisplayOptions>(loadDisplayOptions());
+  
+  // Synchronously load data from localStorage on first render to prevent any race conditions or flicker
+  const [cards, setCards] = useState<CreditCard[]>(() => {
+    try {
+      if (!isAppInitialized()) {
+        const sample = seedSampleData();
+        return sample.cards;
+      }
+      return loadCards();
+    } catch {
+      return [];
+    }
+  });
+
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    try {
+      if (!isAppInitialized()) {
+        return seedSampleData().transactions;
+      }
+      return loadTransactions();
+    } catch {
+      return [];
+    }
+  });
+
+  const [categories, setCategories] = useState<SpendingCategory[]>(() => {
+    try {
+      return loadCategories();
+    } catch {
+      return [];
+    }
+  });
+
+  const [displayOptions, setDisplayOptions] = useState<DisplayOptions>(() => loadDisplayOptions());
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
   // Modals
@@ -53,72 +84,9 @@ export function App() {
     setTimeout(() => setSaveToast(null), 2500);
   };
 
-  // Initialize data on mount
+  // Mark app initialized once mounted
   useEffect(() => {
-    if (!isAppInitialized()) {
-      // First time user ever opens the app: seed sample data
-      const sample = seedSampleData();
-      setCards(sample.cards);
-      setTransactions(sample.transactions);
-      setCategories(loadCategories());
-    } else {
-      // User has used the app before: load EXACT saved state (even if 0 cards)
-      let loaded = loadCards();
-      // Automatically enrich MB JCB Platinum with exact statement info from user's app & official PDF
-      let hasModified = false;
-      loaded = loaded.map(c => {
-        if (c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb')) {
-          hasModified = true;
-          return {
-            ...c,
-            statementDay: 8,
-            paymentDueDayFixed: 23,
-            paymentDueDaysAfter: 15,
-            paymentMethod: 'auto_debit' as const,
-            autoDebitAccount: '004131414 - PHAM THANH SON',
-            paymentRate: 'full' as const,
-            cashbackPolicy: {
-              overallMaxCashback: 500000,
-              minCycleSpendToQualify: 2000000, // ĐK tiên quyết: Lĩnh vực khác >= 2M
-              defaultPercentage: 0,
-              categoryRules: [
-                {
-                  categoryId: 'shopee',
-                  categoryName: 'Shopee (Mua hàng hóa)',
-                  percentage: 10,
-                  maxCashback: 500000,
-                  minSpend: 2000000,
-                },
-                {
-                  categoryId: 'tiktok_shop',
-                  categoryName: 'TikTok Shop (Mua hàng hóa)',
-                  percentage: 10,
-                  maxCashback: 500000,
-                  minSpend: 2000000,
-                },
-              ],
-            },
-          };
-        }
-        return c;
-      });
-      if (hasModified) {
-        saveCards(loaded);
-      }
-      setCards(loaded);
-
-      let loadedTx = loadTransactions();
-      // If MB JCB exists but has no transactions yet, auto-populate realistic cashflow
-      const mbCard = loaded.find(c => c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb'));
-      if (mbCard) {
-        const mbTxCount = loadedTx.filter(t => t.cardId === mbCard.id).length;
-        if (mbTxCount === 0) {
-          loadedTx = seedMBJCBSampleFlow(mbCard.id);
-        }
-      }
-      setTransactions(loadedTx);
-      setCategories(loadCategories());
-    }
+    markAppInitialized();
   }, []);
 
   // Save changes to localStorage
