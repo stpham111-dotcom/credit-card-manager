@@ -148,6 +148,72 @@ export function savePaidStatus(status: Record<string, boolean>) {
   }
 }
 
+export function seedMBJCBSampleFlow(targetCardId?: string): Transaction[] {
+  const cards = loadCards();
+  const mbCard = targetCardId 
+    ? cards.find(c => c.id === targetCardId) 
+    : cards.find(c => c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb'));
+  
+  const cardId = mbCard ? mbCard.id : 'card-sample-mb-jcb';
+
+  const today = new Date();
+  const formatD = (offsetDays: number) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - offsetDays);
+    return d.toISOString().split('T')[0];
+  };
+
+  const mbSampleTx: Transaction[] = [
+    {
+      id: `tx-mb-1-${Date.now()}`,
+      cardId,
+      amount: 2350000,
+      date: formatD(2),
+      categoryId: 'shopee',
+      note: 'Mua sắm đồ gia dụng Shopee (MID: 000109900005175)',
+      cashbackEarned: 235000,
+      cashbackRate: 10,
+    },
+    {
+      id: `tx-mb-2-${Date.now()}`,
+      cardId,
+      amount: 2150000,
+      date: formatD(4),
+      categoryId: 'tiktok_shop',
+      note: 'Mua sắm thời trang TikTok Shop (MCC 5399)',
+      cashbackEarned: 215000,
+      cashbackRate: 10,
+    },
+    {
+      id: `tx-mb-3-${Date.now()}`,
+      cardId,
+      amount: 1350000,
+      date: formatD(6),
+      categoryId: 'dining',
+      note: 'Ăn tối nhà hàng Gogi House (Apple Pay)',
+      cashbackEarned: 0,
+      cashbackRate: 0,
+    },
+    {
+      id: `tx-mb-4-${Date.now()}`,
+      cardId,
+      amount: 1150000,
+      date: formatD(1),
+      categoryId: 'supermarket',
+      note: 'Siêu thị Winmart Times City (Lĩnh vực khác)',
+      cashbackEarned: 0,
+      cashbackRate: 0,
+    },
+  ];
+
+  const currentTx = loadTransactions();
+  // Keep non-mb transactions or append
+  const otherTx = currentTx.filter(t => t.cardId !== cardId);
+  const combined = [...mbSampleTx, ...otherTx];
+  saveTransactions(combined);
+  return combined;
+}
+
 export function seedSampleData(): { cards: CreditCard[]; transactions: Transaction[] } {
   const cards = INITIAL_SAMPLE_CARDS;
   const today = new Date();
@@ -158,6 +224,48 @@ export function seedSampleData(): { cards: CreditCard[]; transactions: Transacti
   };
 
   const sampleTransactions: Transaction[] = [
+    // MB JCB Platinum realistic spending flow
+    {
+      id: 'tx-mb-1',
+      cardId: 'card-sample-mb-jcb',
+      amount: 2350000,
+      date: formatD(2),
+      categoryId: 'shopee',
+      note: 'Mua sắm gia dụng Shopee (MID: 000109900005175)',
+      cashbackEarned: 235000,
+      cashbackRate: 10,
+    },
+    {
+      id: 'tx-mb-2',
+      cardId: 'card-sample-mb-jcb',
+      amount: 2150000,
+      date: formatD(4),
+      categoryId: 'tiktok_shop',
+      note: 'Mua sắm thời trang TikTok Shop (MCC 5399)',
+      cashbackEarned: 215000,
+      cashbackRate: 10,
+    },
+    {
+      id: 'tx-mb-3',
+      cardId: 'card-sample-mb-jcb',
+      amount: 1350000,
+      date: formatD(6),
+      categoryId: 'dining',
+      note: 'Ăn tối nhà hàng Gogi House (Apple Pay)',
+      cashbackEarned: 0,
+      cashbackRate: 0,
+    },
+    {
+      id: 'tx-mb-4',
+      cardId: 'card-sample-mb-jcb',
+      amount: 1150000,
+      date: formatD(1),
+      categoryId: 'supermarket',
+      note: 'Siêu thị Winmart Times City (Lĩnh vực khác)',
+      cashbackEarned: 0,
+      cashbackRate: 0,
+    },
+    // Other cards
     {
       id: 'tx-1',
       cardId: 'card-sample-1',

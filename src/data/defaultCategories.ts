@@ -2,6 +2,20 @@ import { SpendingCategory } from '../types';
 
 export const DEFAULT_CATEGORIES: SpendingCategory[] = [
   {
+    id: 'shopee',
+    name: 'Shopee (Mua hàng hóa)',
+    iconName: 'ShoppingBag',
+    color: '#ee4d2d',
+    description: 'Mua sắm hàng hóa Shopee (không bao gồm ShopeeFood, ShopeeMart, nạp thẻ, hóa đơn)',
+  },
+  {
+    id: 'tiktok_shop',
+    name: 'TikTok Shop (Mua hàng hóa)',
+    iconName: 'Video',
+    color: '#010101',
+    description: 'Mua sắm hàng hóa TikTok Shop (MCC 5399, không tính quảng cáo)',
+  },
+  {
     id: 'dining',
     name: 'Ẩm thực & Nhà hàng',
     iconName: 'UtensilsCrossed',
@@ -17,10 +31,10 @@ export const DEFAULT_CATEGORIES: SpendingCategory[] = [
   },
   {
     id: 'online_shopping',
-    name: 'Mua sắm trực tuyến',
+    name: 'Mua sắm trực tuyến khác',
     iconName: 'Laptop',
     color: '#3b82f6',
-    description: 'Shopee, Lazada, Tiki, TikTok Shop, trang thương mại điện tử',
+    description: 'Lazada, Tiki, trang thương mại điện tử khác',
   },
   {
     id: 'travel',
@@ -52,9 +66,9 @@ export const DEFAULT_CATEGORIES: SpendingCategory[] = [
   },
   {
     id: 'other',
-    name: 'Chi tiêu khác',
+    name: 'Chi tiêu khác (Lĩnh vực khác)',
     iconName: 'Tag',
     color: '#64748b',
-    description: 'Các giao dịch thanh toán POS hoặc trực tuyến thông thường khác',
+    description: 'Các giao dịch thanh toán POS hoặc trực tuyến ở lĩnh vực khác',
   },
 ];

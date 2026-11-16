@@ -16,6 +16,7 @@ import {
   loadDisplayOptions, 
   saveDisplayOptions, 
   seedSampleData,
+  seedMBJCBSampleFlow,
   isAppInitialized,
   clearAllUserData
 } from './utils/storage';
@@ -62,7 +63,7 @@ export function App() {
     } else {
       // User has used the app before: load EXACT saved state (even if 0 cards)
       let loaded = loadCards();
-      // Automatically enrich MB JCB Platinum with exact statement info from user's app
+      // Automatically enrich MB JCB Platinum with exact statement info from user's app & official PDF
       let hasModified = false;
       loaded = loaded.map(c => {
         if (c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb')) {
@@ -72,9 +73,30 @@ export function App() {
             statementDay: 8,
             paymentDueDayFixed: 23,
             paymentDueDaysAfter: 15,
-            paymentMethod: 'auto_debit',
+            paymentMethod: 'auto_debit' as const,
             autoDebitAccount: '004131414 - PHAM THANH SON',
-            paymentRate: 'full',
+            paymentRate: 'full' as const,
+            cashbackPolicy: {
+              overallMaxCashback: 500000,
+              minCycleSpendToQualify: 2000000, // ĐK tiên quyết: Lĩnh vực khác >= 2M
+              defaultPercentage: 0,
+              categoryRules: [
+                {
+                  categoryId: 'shopee',
+                  categoryName: 'Shopee (Mua hàng hóa)',
+                  percentage: 10,
+                  maxCashback: 500000,
+                  minSpend: 2000000,
+                },
+                {
+                  categoryId: 'tiktok_shop',
+                  categoryName: 'TikTok Shop (Mua hàng hóa)',
+                  percentage: 10,
+                  maxCashback: 500000,
+                  minSpend: 2000000,
+                },
+              ],
+            },
           };
         }
         return c;
@@ -83,7 +105,17 @@ export function App() {
         saveCards(loaded);
       }
       setCards(loaded);
-      setTransactions(loadTransactions());
+
+      let loadedTx = loadTransactions();
+      // If MB JCB exists but has no transactions yet, auto-populate realistic cashflow
+      const mbCard = loaded.find(c => c.cardName.toLowerCase().includes('jcb') || c.bankName.toLowerCase().includes('mb'));
+      if (mbCard) {
+        const mbTxCount = loadedTx.filter(t => t.cardId === mbCard.id).length;
+        if (mbTxCount === 0) {
+          loadedTx = seedMBJCBSampleFlow(mbCard.id);
+        }
+      }
+      setTransactions(loadedTx);
       setCategories(loadCategories());
     }
   }, []);
@@ -179,6 +211,12 @@ export function App() {
       saveCards(updated);
       showSaveSuccess('Đã thêm thẻ MB Bank JCB Platinum với thông tin trích nợ tự động!');
     }
+  };
+
+  const handleSeedMBJCBFlow = () => {
+    const updatedTx = seedMBJCBSampleFlow();
+    setTransactions(updatedTx);
+    showSaveSuccess('Đã nạp 4 giao dịch mẫu MB JCB (Đạt chuẩn 3 điều kiện hoàn tiền)!');
   };
 
   const handleClearAllData = () => {
@@ -338,6 +376,7 @@ export function App() {
               showSaveSuccess('Đã khôi phục dữ liệu từ file!');
             }}
             onAddMBJCBCard={handleAddMBJCBCard}
+            onSeedMBJCBFlow={handleSeedMBJCBFlow}
           />
         )}
       </main>

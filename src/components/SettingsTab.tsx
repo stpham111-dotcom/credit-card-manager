@@ -10,11 +10,14 @@ import {
   Check, 
   Sparkles,
   Tag,
-  Coins
+  Coins,
+  FileText,
+  TrendingUp
 } from 'lucide-react';
 import { CreditCard, SpendingCategory, ViewTab } from '../types';
 import { exportBackupJSON, importBackupJSON } from '../utils/storage';
 import { formatVND } from '../utils/formatters';
+import { MBJCBPolicyModal } from './MBJCBPolicyModal';
 
 interface SettingsTabProps {
   currentSubTab: ViewTab;
@@ -27,6 +30,7 @@ interface SettingsTabProps {
   onSeedSampleData: () => void;
   onDataImported: () => void;
   onAddMBJCBCard?: () => void;
+  onSeedMBJCBFlow?: () => void;
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -40,8 +44,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onSeedSampleData,
   onDataImported,
   onAddMBJCBCard,
+  onSeedMBJCBFlow,
 }) => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
   const handleExport = () => {
     const json = exportBackupJSON();
@@ -101,28 +107,52 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-sm text-white">Chương trình MB Bank JCB Platinum</h4>
+                  <h4 className="font-bold text-sm text-white">Chính sách Thẻ MB Bank JCB Platinum</h4>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    MỚI CẬP NHẬT
+                    CHUẨN MB BANK PDF
                   </span>
                 </div>
                 <p className="text-xs text-slate-200 mt-1 leading-relaxed">
-                  • <strong>Hoàn 10%</strong> Mua sắm trực tuyến (Shopee & TikTok Shop), tối đa <strong>500.000 đ/kỳ</strong><br />
-                  • <strong>Điều kiện</strong>: Chi tiêu trên sàn &ge; 2.000.000 đ & chi tiêu lĩnh vực khác &ge; 2.000.000 đ
+                  • <strong>Ưu đãi chào mừng:</strong> Hoàn 500.000 ₫ khi đạt 5 GD & chi &ge; 5 triệu trong 60 ngày<br />
+                  • <strong>Hoàn 10% Shopee & 10% TikTok Shop:</strong> Tối đa 500.000 ₫/kỳ khi chi &ge; 2M mỗi sàn<br />
+                  • <strong>Điều kiện tiên quyết:</strong> Chi tiêu <strong>Lĩnh vực khác &ge; 2.000.000 ₫</strong> trong kỳ sao kê
                 </p>
               </div>
             </div>
 
-            {onAddMBJCBCard && (
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={onAddMBJCBCard}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shrink-0 cursor-pointer transition-colors shadow-xs"
+                onClick={() => setIsPolicyModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium border border-white/15 cursor-pointer transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Thêm thẻ này</span>
+                <FileText className="w-3.5 h-3.5 text-amber-300" />
+                <span>Xem Thể lệ PDF</span>
               </button>
-            )}
+
+              {onSeedMBJCBFlow && (
+                <button
+                  type="button"
+                  onClick={onSeedMBJCBFlow}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-xs cursor-pointer transition-colors"
+                  title="Nạp 4 giao dịch mẫu cho thẻ MB JCB đạt chuẩn 3 điều kiện"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>Nạp dòng tiền mẫu MB JCB</span>
+                </button>
+              )}
+
+              {onAddMBJCBCard && (
+                <button
+                  type="button"
+                  onClick={onAddMBJCBCard}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Thêm thẻ này</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="divide-y divide-slate-100">
@@ -315,6 +345,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
           </button>
         </div>
       </div>
+
+      {/* MB Bank JCB Policy Modal */}
+      <MBJCBPolicyModal
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+      />
     </div>
   );
 };

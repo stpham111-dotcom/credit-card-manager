@@ -16,12 +16,19 @@ export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
     personalTargetSpend: 10000000,
     cashbackPolicy: {
       overallMaxCashback: 500000,
-      minCycleSpendToQualify: 4000000,
-      defaultPercentage: 0.3,
+      minCycleSpendToQualify: 2000000, // ĐK bắt buộc: Lĩnh vực khác >= 2tr
+      defaultPercentage: 0,
       categoryRules: [
         {
-          categoryId: 'online_shopping',
-          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
+          categoryId: 'shopee',
+          categoryName: 'Shopee (Mua hàng hóa)',
+          percentage: 10,
+          maxCashback: 500000,
+          minSpend: 2000000,
+        },
+        {
+          categoryId: 'tiktok_shop',
+          categoryName: 'TikTok Shop (Mua hàng hóa)',
           percentage: 10,
           maxCashback: 500000,
           minSpend: 2000000,
@@ -160,12 +167,19 @@ export const INITIAL_SAMPLE_CARDS: CreditCard[] = [
     order: 1,
     cashbackPolicy: {
       overallMaxCashback: 500000,
-      minCycleSpendToQualify: 4000000,
-      defaultPercentage: 0.3,
+      minCycleSpendToQualify: 2000000, // ĐK bắt buộc: Lĩnh vực khác >= 2tr
+      defaultPercentage: 0,
       categoryRules: [
         {
-          categoryId: 'online_shopping',
-          categoryName: 'Mua sắm trực tuyến (Shopee, TikTok Shop)',
+          categoryId: 'shopee',
+          categoryName: 'Shopee (Mua hàng hóa)',
+          percentage: 10,
+          maxCashback: 500000,
+          minSpend: 2000000,
+        },
+        {
+          categoryId: 'tiktok_shop',
+          categoryName: 'TikTok Shop (Mua hàng hóa)',
           percentage: 10,
           maxCashback: 500000,
           minSpend: 2000000,

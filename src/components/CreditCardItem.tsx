@@ -11,11 +11,14 @@ import {
   ChevronUp, 
   Plus, 
   Edit3,
-  Percent
+  Percent,
+  FileText
 } from 'lucide-react';
 import { CreditCard, DisplayOptions } from '../types';
 import { CardCycleAnalysis } from '../utils/cashbackCalculator';
 import { formatVND, formatDateVN } from '../utils/formatters';
+import { MBJCBTracker } from './MBJCBTracker';
+import { MBJCBPolicyModal } from './MBJCBPolicyModal';
 
 interface CreditCardItemProps {
   analysis: CardCycleAnalysis;
@@ -31,6 +34,7 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
   onEditCard,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const { card } = analysis;
 
   // Calculate percentage of limit used
@@ -205,6 +209,18 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
           )}
         </div>
 
+        {/* Dedicated MB JCB Platinum 3-Pillar Condition Tracker */}
+        {analysis.mbJcbPillars && (
+          <div className="mb-5">
+            <MBJCBTracker
+              pillars={analysis.mbJcbPillars}
+              card={card}
+              onViewPolicy={() => setIsPolicyModalOpen(true)}
+              onAddTransaction={() => onAddTransaction(card.id)}
+            />
+          </div>
+        )}
+
         {/* Progress Bars Row */}
         <div className="space-y-3 mb-4">
           {/* Credit Limit Progress */}
@@ -352,6 +368,12 @@ export const CreditCardItem: React.FC<CreditCardItemProps> = ({
           </div>
         )}
       </div>
+
+      {/* MB Bank JCB Policy Detail Modal */}
+      <MBJCBPolicyModal
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+      />
     </div>
   );
 };
