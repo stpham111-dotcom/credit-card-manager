@@ -105,6 +105,7 @@ export type ViewTab =
   | 'overview' 
   | 'transactions'
   | 'statements' 
+  | 'installments'
   | 'reports' 
   | 'recommender' 
   | 'lookup' 
@@ -113,6 +114,29 @@ export type ViewTab =
   | 'cashback-policy' 
   | 'categories' 
   | 'toggle-cashbook';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  autoDebitAccount: string;
+  membershipTier: string;
+  avatarUrl?: string;
+  pinCode: string;
+  isPinEnabled: boolean;
+  isLocked: boolean;
+}
+
+export interface FintechAlert {
+  id: string;
+  type: 'danger' | 'warning' | 'info' | 'success';
+  title: string;
+  message: string;
+  date: string;
+  isRead: boolean;
+  linkTab?: ViewTab;
+}
 
 export interface DisplayOptions {
   showPersonalTarget: boolean;

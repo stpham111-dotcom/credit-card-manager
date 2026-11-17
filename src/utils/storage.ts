@@ -1,4 +1,4 @@
-import { CreditCard, Transaction, SpendingCategory, DisplayOptions, InstallmentPlan } from '../types';
+import { CreditCard, Transaction, SpendingCategory, DisplayOptions, InstallmentPlan, UserProfile } from '../types';
 import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
 import { INITIAL_SAMPLE_CARDS } from '../data/defaultCards';
 import { REAL_MB_TRANSACTIONS } from '../data/realTransactions';
@@ -11,6 +11,37 @@ const CATEGORIES_KEY = 'hoantien_categories_v2';
 const DISPLAY_OPTIONS_KEY = 'hoantien_display_options_v2';
 const PAID_STATUS_KEY = 'hoantien_paid_status_v2';
 const INSTALLMENTS_KEY = 'hoantien_installments_v2';
+const USER_PROFILE_KEY = 'hoantien_user_profile_v2';
+
+export const DEFAULT_USER_PROFILE: UserProfile = {
+  id: 'stpham',
+  name: 'Phạm Thanh Sơn',
+  email: 'thanhson.pham@mbbank.com.vn',
+  phone: '0988 ••• •14',
+  autoDebitAccount: '004131414 - PHAM THANH SON',
+  membershipTier: 'MB JCB Platinum Priority',
+  pinCode: '1111',
+  isPinEnabled: false,
+  isLocked: false,
+};
+
+export function loadUserProfile(): UserProfile {
+  try {
+    const raw = localStorage.getItem(USER_PROFILE_KEY);
+    if (!raw) return DEFAULT_USER_PROFILE;
+    return { ...DEFAULT_USER_PROFILE, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_USER_PROFILE;
+  }
+}
+
+export function saveUserProfile(profile: UserProfile) {
+  try {
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
+  } catch (e) {
+    console.error('Failed to save user profile', e);
+  }
+}
 
 export const DEFAULT_DISPLAY_OPTIONS: DisplayOptions = {
   showPersonalTarget: true,
@@ -284,6 +315,7 @@ export function exportBackupJSON(): string {
     displayOptions: loadDisplayOptions(),
     paidStatus: loadPaidStatus(),
     installments: loadInstallments(),
+    userProfile: loadUserProfile(),
   };
   return JSON.stringify(data, null, 2);
 }
@@ -308,6 +340,9 @@ export function importBackupJSON(jsonStr: string): boolean {
     }
     if (data.installments && Array.isArray(data.installments)) {
       saveInstallments(data.installments);
+    }
+    if (data.userProfile && typeof data.userProfile === 'object') {
+      saveUserProfile(data.userProfile);
     }
     markAppInitialized();
     return true;

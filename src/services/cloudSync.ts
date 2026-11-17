@@ -11,6 +11,8 @@ import {
   saveDisplayOptions, 
   loadInstallments, 
   saveInstallments,
+  loadUserProfile,
+  saveUserProfile,
   markAppInitialized
 } from '../utils/storage';
 
@@ -66,6 +68,7 @@ export function prepareSyncPayload() {
     paidStatus: loadPaidStatus(),
     installments: loadInstallments(),
     displayOptions: loadDisplayOptions(),
+    userProfile: loadUserProfile(),
   };
 }
 
@@ -90,6 +93,9 @@ export function applySyncPayload(payload: any): boolean {
     }
     if (payload.displayOptions && typeof payload.displayOptions === 'object') {
       saveDisplayOptions(payload.displayOptions);
+    }
+    if (payload.userProfile && typeof payload.userProfile === 'object') {
+      saveUserProfile(payload.userProfile);
     }
 
     markAppInitialized();

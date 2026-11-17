@@ -1,4 +1,4 @@
-import { InstallmentPlan } from '../types';
+import { InstallmentPlan } from '../types/index.ts';
 
 export const DEFAULT_INSTALLMENT_PLANS: InstallmentPlan[] = [
   {

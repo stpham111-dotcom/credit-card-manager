@@ -163,24 +163,13 @@ export const LookupTab: React.FC<LookupTabProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {onLoadRealMBTransactions && (
-            <button
-              onClick={onLoadRealMBTransactions}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
-              title="Khôi phục hoặc nạp toàn bộ 79 giao dịch sao kê thực tế từ app MB Bank qua 4 chu kỳ"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              <span>Nạp 79 giao dịch MB Bank</span>
-            </button>
-          )}
-
           {onExportCSV && transactions.length > 0 && (
             <button
               onClick={onExportCSV}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs cursor-pointer transition-colors"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Xuất CSV</span>
+              <span>Xuất CSV / Excel</span>
             </button>
           )}
 

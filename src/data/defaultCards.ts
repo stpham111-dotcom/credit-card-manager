@@ -1,4 +1,4 @@
-import { CreditCard } from '../types';
+import { CreditCard } from '../types/index.ts';
 
 export const POPULAR_CARD_PRESETS: Partial<CreditCard>[] = [
   {

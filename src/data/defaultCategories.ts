@@ -1,4 +1,4 @@
-import { SpendingCategory } from '../types';
+import { SpendingCategory } from '../types/index.ts';
 
 export const DEFAULT_CATEGORIES: SpendingCategory[] = [
   {

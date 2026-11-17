@@ -20,12 +20,17 @@ import {
   resetToRealMBTransactions,
   isAppInitialized,
   markAppInitialized,
-  clearAllUserData
+  clearAllUserData,
+  loadUserProfile,
+  saveUserProfile,
+  loadInstallments
 } from './utils/storage';
+import { UserProfile } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { OverviewTab } from './components/OverviewTab';
 import { StatementTab } from './components/StatementTab';
+import { InstallmentsTab } from './components/InstallmentsTab';
 import { ReportTab } from './components/ReportTab';
 import { RecommenderTab } from './components/RecommenderTab';
 import { LookupTab } from './components/LookupTab';
@@ -33,6 +38,8 @@ import { SettingsTab } from './components/SettingsTab';
 import { TransactionModal } from './components/TransactionModal';
 import { CardModal } from './components/CardModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
+import { UserProfileModal } from './components/UserProfileModal';
+import { SecurityLockModal } from './components/SecurityLockModal';
 import { POPULAR_CARD_PRESETS } from './data/defaultCards';
 import { 
   CloudSyncConfig, 
@@ -48,6 +55,7 @@ const TAB_ROUTES: Record<ViewTab, string> = {
   transactions: '#/transactions',
   lookup: '#/transactions',
   statements: '#/statements',
+  installments: '#/installments',
   reports: '#/reports',
   recommender: '#/recommender',
   'manage-cards': '#/settings/cards',
@@ -61,6 +69,7 @@ function getTabFromHash(): ViewTab {
   if (typeof window === 'undefined') return 'overview';
   const hash = window.location.hash.toLowerCase();
   if (!hash || hash === '#/' || hash === '#/overview') return 'overview';
+  if (hash.includes('instal') || hash.includes('tra-gop')) return 'installments';
   if (hash.includes('trans') || hash.includes('giao-dich') || hash.includes('lookup')) return 'transactions';
   if (hash.includes('statement') || hash.includes('sao-ke')) return 'statements';
   if (hash.includes('report') || hash.includes('bao-cao')) return 'reports';
@@ -139,6 +148,15 @@ export function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
   const [cloudSyncConfig, setCloudSyncConfig] = useState<CloudSyncConfig>(() => loadCloudSyncConfig());
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => loadUserProfile());
+  const [isSecurityLocked, setIsSecurityLocked] = useState<boolean>(() => loadUserProfile().isPinEnabled);
+  const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
+
+  const handleSaveUserProfile = (updated: UserProfile) => {
+    setUserProfile(updated);
+    saveUserProfile(updated);
+    showSaveSuccess('Đã cập nhật hồ sơ chủ thẻ thành công!');
+  };
 
   const showSaveSuccess = (message: string) => {
     setSaveToast(message);
@@ -249,6 +267,7 @@ export function App() {
     setTransactions(loadTransactions());
     setCategories(loadCategories());
     setDisplayOptions(loadDisplayOptions());
+    setUserProfile(loadUserProfile());
     setCloudSyncConfig(loadCloudSyncConfig());
     showSaveSuccess('Đã đồng bộ dữ liệu đám mây thành công!');
   };
@@ -456,6 +475,8 @@ export function App() {
         onOpenNewTransaction={() => handleOpenAddTxWithCard()}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        userProfile={userProfile}
+        onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
       />
 
       {/* Main Content Pane */}
@@ -470,6 +491,10 @@ export function App() {
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
           onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
           cloudSyncConfig={cloudSyncConfig}
+          userProfile={userProfile}
+          onOpenUserProfile={() => setIsUserProfileModalOpen(true)}
+          onLockScreen={() => setIsSecurityLocked(true)}
+          onSelectTab={handleSelectTab}
         />
 
         {/* Tab Router */}
@@ -511,6 +536,13 @@ export function App() {
             cards={cards}
             transactions={transactions}
             onAddTransaction={handleOpenAddTxWithCard}
+          />
+        )}
+
+        {currentTab === 'installments' && (
+          <InstallmentsTab
+            cards={cards}
+            installments={loadInstallments()}
           />
         )}
 
@@ -600,6 +632,23 @@ export function App() {
           setCloudSyncConfig(loadCloudSyncConfig());
         }}
         onDataSynced={handleDataSynced}
+      />
+
+      <UserProfileModal
+        isOpen={isUserProfileModalOpen}
+        onClose={() => setIsUserProfileModalOpen(false)}
+        userProfile={userProfile}
+        onSaveProfile={handleSaveUserProfile}
+        onLockScreen={() => {
+          setIsUserProfileModalOpen(false);
+          setIsSecurityLocked(true);
+        }}
+      />
+
+      <SecurityLockModal
+        isLocked={isSecurityLocked}
+        userProfile={userProfile}
+        onUnlock={() => setIsSecurityLocked(false)}
       />
     </div>
   );

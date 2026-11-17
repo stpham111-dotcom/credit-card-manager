@@ -260,6 +260,39 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
       </div>
 
+      {/* Active Installment Widget Banner */}
+      {activeInstallmentDebt > 0 && installmentPlans.length > 0 && (
+        <div className="bg-gradient-to-r from-[#0b192c] via-[#1e3e62] to-[#0b192c] rounded-2xl p-4 sm:p-5 text-white border border-slate-700/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex flex-col items-center justify-center text-white shrink-0">
+              <span className="text-xs font-black">0%</span>
+              <span className="text-[8px] uppercase tracking-wider text-indigo-300 font-bold">Góp</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm text-white">
+                  Đang trả góp 0%: {installmentPlans[0].merchantName}
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Kỳ {installmentPlans[0].paidPeriods}/{installmentPlans[0].tenorMonths}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-1">
+                Dư nợ còn lại: <strong className="text-white">{maskMoney(installmentPlans[0].remainingDebt)}</strong> • Gốc mỗi kỳ: <strong>{maskMoney(installmentPlans[0].monthlyPrincipal)}</strong> • Hạn mức thẻ đang khóa: {maskMoney(installmentPlans[0].remainingDebt)}
+              </p>
+            </div>
+          </div>
+
+          <a
+            href="#/installments"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors shrink-0 no-underline cursor-pointer"
+          >
+            <span>Chi tiết 6 kỳ trả nợ</span>
+            <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
+          </a>
+        </div>
+      )}
+
       {/* Progress & Filters Bar */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
